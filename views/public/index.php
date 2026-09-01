@@ -47,7 +47,7 @@
           <?= e(num(count($range['sets']))) ?> <?= e(plural(count($range['sets']), 'set', 'sets')) ?>
           · <?= e(num($range['mini_count'])) ?> <?= e(plural($range['mini_count'], 'miniature', 'miniatures')) ?>
         </span>
-        <span class="range-owned"><?= e(num($range['owned_count'])) ?> of <?= e(num($range['mini_count'])) ?> owned</span>
+        <span class="range-owned"><?= e(num($range['owned_count'])) ?> / <?= e(num($range['mini_count'])) ?> owned</span>
       </div>
 
       <?php if (!$range['sets']): ?>

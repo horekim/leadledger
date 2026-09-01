@@ -26,17 +26,19 @@ $message = flash();
     </a>
 
     <?php if ($user): ?>
-      <form method="post" action="<?= e(url('sign-out')) ?>">
-        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-        <button type="submit" class="btn btn-ghost">Sign out</button>
-      </form>
-      <?php if ($admin && $screen === 'admin'): ?>
-        <a class="btn btn-secondary" href="<?= e(url('')) ?>">
-          <span class="msym" style="font-size:16px">arrow_back</span>Public site
-        </a>
-      <?php elseif ($admin): ?>
-        <a class="btn btn-secondary" href="<?= e(url('admin')) ?>">Admin</a>
-      <?php endif; ?>
+      <div class="header-actions">
+        <form method="post" action="<?= e(url('sign-out')) ?>">
+          <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+          <button type="submit" class="btn btn-ghost">Sign out</button>
+        </form>
+        <?php if ($admin && $screen === 'admin'): ?>
+          <a class="btn btn-secondary" href="<?= e(url('')) ?>">
+            <span class="msym" style="font-size:16px">arrow_back</span>Public site
+          </a>
+        <?php elseif ($admin): ?>
+          <a class="btn btn-secondary" href="<?= e(url('admin')) ?>">Admin</a>
+        <?php endif; ?>
+      </div>
     <?php elseif ($screen !== 'auth'): ?>
       <a class="btn btn-secondary" href="<?= e(url('sign-in')) ?>">Sign in</a>
     <?php endif; ?>
