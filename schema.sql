@@ -1,0 +1,65 @@
+-- Lead Ledger — schema. Every table carries the `ll_` prefix.
+--
+-- You can paste this straight into phpMyAdmin on one.com, or let install.php
+-- run it for you (it rewrites the prefix to whatever db_prefix in config.php
+-- says, so edit that rather than this file if you want a different one).
+
+CREATE TABLE IF NOT EXISTS ll_users (
+  id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name          VARCHAR(120)  NOT NULL,
+  email         VARCHAR(190)  NOT NULL,
+  password_hash VARCHAR(255)  NOT NULL,
+  is_admin      TINYINT(1)    NOT NULL DEFAULT 0,
+  created_at    DATETIME      NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_users_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ll_ranges (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name       VARCHAR(160) NOT NULL,
+  slug       VARCHAR(160) NOT NULL,
+  created_at DATETIME     NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_ranges_slug (slug),
+  KEY ix_ranges_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ll_sets (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  range_id   INT UNSIGNED NOT NULL,
+  code       VARCHAR(40)  NOT NULL,
+  name       VARCHAR(160) NOT NULL,
+  created_at DATETIME     NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_sets_range_code (range_id, code),
+  CONSTRAINT fk_sets_range FOREIGN KEY (range_id)
+    REFERENCES ll_ranges (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ll_miniatures (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  set_id     INT UNSIGNED NOT NULL,
+  code       VARCHAR(60)  NOT NULL,
+  name       VARCHAR(190) NOT NULL,
+  photo      VARCHAR(255) NULL DEFAULT NULL,
+  sort_index INT          NOT NULL DEFAULT 0,
+  created_at DATETIME     NOT NULL,
+  PRIMARY KEY (id),
+  KEY ix_minis_set_sort (set_id, sort_index, id),
+  CONSTRAINT fk_minis_set FOREIGN KEY (set_id)
+    REFERENCES ll_sets (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Ownership is private per user; nothing in the UI exposes who owns what.
+CREATE TABLE IF NOT EXISTS ll_ownership (
+  user_id      INT UNSIGNED NOT NULL,
+  miniature_id INT UNSIGNED NOT NULL,
+  created_at   DATETIME     NOT NULL,
+  PRIMARY KEY (user_id, miniature_id),
+  KEY ix_own_mini (miniature_id),
+  CONSTRAINT fk_own_user FOREIGN KEY (user_id)
+    REFERENCES ll_users (id) ON DELETE CASCADE,
+  CONSTRAINT fk_own_mini FOREIGN KEY (miniature_id)
+    REFERENCES ll_miniatures (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,0 +1,27 @@
+# Lead Ledger — Apache / one.com
+
+DirectoryIndex index.php
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Source, templates and the design handoff are not web-servable.
+  RewriteRule ^(src|views|design_handoff_lead_ledger)/ - [F,L]
+
+  # Real files and folders (assets, uploads) are served directly.
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Credentials and the schema never go over HTTP.
+<FilesMatch "^(config\.php|config\.example\.php|schema\.sql)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
