@@ -11,7 +11,10 @@ carries the **`ll_`** prefix, so it can share a database with anything else.
 ## Setting it up on one.com
 
 1. **Upload** everything in this repository into the webspace folder your domain
-   serves from (usually `/www` or `/www/<domain>`).
+   serves from (usually `/www` or `/www/<domain>`). **Check that `.htaccess` and
+   `uploads/.htaccess` actually arrived** — they are dotfiles, and file managers
+   and FTP clients hide them by default, so they are easy to leave behind.
+   Without the first one every route 404s.
 2. **Create or pick a database** in the one.com control panel, under
    *Web hosting → MySQL/Database*. Note the hostname, database name and user.
 3. **Copy `config.example.php` to `config.php`** on the server and fill in the
