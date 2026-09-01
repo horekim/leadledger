@@ -19,8 +19,8 @@ $shown = array_values(array_filter($miniatures, static function (array $m) use (
     return true;
 }));
 
-$setUrl = static fn(array $r, array $s): string => url(rawurlencode($r['slug']) . '/' . rawurlencode($s['code']));
-$here   = $setUrl(['slug' => $range['slug']], ['code' => $set['code']]);
+$setUrl = static fn(array $r, array $s): string => url(rawurlencode($r['slug']) . '/' . rawurlencode($s['slug']));
+$here   = $setUrl(['slug' => $range['slug']], ['slug' => $set['slug']]);
 $qs     = static function (array $over) use ($here, $filter, $density): string {
     $params = array_merge(['show' => $filter, 'density' => $density], $over);
     if ($params['show'] === 'all')          { unset($params['show']); }

@@ -101,6 +101,14 @@ optimistic toggles, modal dialogs and drag-and-drop.
 
 ## Where this departs from the handoff
 
+**Two sets in the same range may carry the same code.** The handoff treats a
+set's code as its identity within a range; here it is a label. Because the
+public URL `/{range}/{set}` still has to address one set, each set also carries
+a `slug` derived from its code and uniquified per range — `c01`, then `c01-2`.
+The slug is what the URL uses and what the database keeps unique; the code is
+free to repeat. Renaming a set's code re-slugs it, so its public URL changes,
+which is the same behaviour ranges already have.
+
 The handoff treats a miniature's code and name as given. In this build **the
 photograph is the required field** and the code and name are both optional,
 stored as `NULL` when absent. A card with neither shows the design's flush-left

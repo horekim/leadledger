@@ -54,8 +54,8 @@ function redirect(string $path): void
     exit;
 }
 
-/** URL-safe slug from a range name. Falls back so it is never empty. */
-function slugify(string $s): string
+/** URL-safe slug from a name or a code. Falls back so it is never empty. */
+function slugify(string $s, string $fallback = 'item'): string
 {
     $s = trim($s);
     if (function_exists('iconv')) {
@@ -67,7 +67,7 @@ function slugify(string $s): string
     $s = strtolower($s);
     $s = preg_replace('/[^a-z0-9]+/', '-', $s) ?? '';
     $s = trim($s, '-');
-    return $s === '' ? 'range' : substr($s, 0, 120);
+    return $s === '' ? $fallback : substr($s, 0, 120);
 }
 
 /**

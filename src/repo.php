@@ -17,6 +17,7 @@ function repo_catalogue(?int $userId): array
                    r.slug         AS range_slug,
                    s.id           AS set_id,
                    s.code         AS set_code,
+                   s.slug         AS set_slug,
                    s.name         AS set_name,
                    COUNT(DISTINCT m.id)           AS mini_count,
                    COUNT(DISTINCT o.miniature_id) AS owned_count
@@ -24,7 +25,7 @@ function repo_catalogue(?int $userId): array
          LEFT JOIN ' . tbl('sets') . ' s        ON s.range_id = r.id
          LEFT JOIN ' . tbl('miniatures') . ' m  ON m.set_id = s.id
          LEFT JOIN ' . tbl('ownership') . ' o   ON o.miniature_id = m.id AND o.user_id = :uid
-          GROUP BY r.id, r.name, r.slug, s.id, s.code, s.name
+          GROUP BY r.id, r.name, r.slug, s.id, s.code, s.slug, s.name
           ORDER BY r.name ASC';
 
     $rows = q($sql, ['uid' => $userId ?? 0])->fetchAll();
@@ -52,6 +53,7 @@ function repo_catalogue(?int $userId): array
         $ranges[$rid]['sets'][] = [
             'id'          => (int)$row['set_id'],
             'code'        => $row['set_code'],
+            'slug'        => $row['set_slug'],
             'name'        => $row['set_name'],
             'mini_count'  => $count,
             'owned_count' => $owned,
@@ -99,21 +101,24 @@ function repo_ranges(): array
     return q('SELECT id, name, slug FROM ' . tbl('ranges') . ' ORDER BY name ASC')->fetchAll();
 }
 
-/** A set plus its range, found the way the public URL addresses it. */
-function repo_set_by_slug_code(string $rangeSlug, string $code): ?array
+/**
+ * A set plus its range, found the way the public URL addresses it. Codes are
+ * not unique within a range, so the URL carries the slug instead.
+ */
+function repo_set_by_slugs(string $rangeSlug, string $setSlug): ?array
 {
-    $sql = 'SELECT s.id, s.code, s.name, s.range_id,
+    $sql = 'SELECT s.id, s.code, s.slug, s.name, s.range_id,
                    r.name AS range_name, r.slug AS range_slug
               FROM ' . tbl('sets') . ' s
               JOIN ' . tbl('ranges') . ' r ON r.id = s.range_id
-             WHERE r.slug = ? AND s.code = ?';
-    $row = q($sql, [$rangeSlug, $code])->fetch();
+             WHERE r.slug = ? AND s.slug = ?';
+    $row = q($sql, [$rangeSlug, $setSlug])->fetch();
     return $row ?: null;
 }
 
 function repo_set(int $id): ?array
 {
-    $sql = 'SELECT s.id, s.code, s.name, s.range_id,
+    $sql = 'SELECT s.id, s.code, s.slug, s.name, s.range_id,
                    r.name AS range_name, r.slug AS range_slug
               FROM ' . tbl('sets') . ' s
               JOIN ' . tbl('ranges') . ' r ON r.id = s.range_id
@@ -202,7 +207,7 @@ function repo_owned_count_in_set(int $userId, int $setId): int
 /** Ranges have no code; the slug is derived from the name and kept unique. */
 function repo_unique_range_slug(string $name, ?int $ignoreId = null): string
 {
-    $base = slugify($name);
+    $base = slugify($name, 'range');
     $slug = $base;
     $n    = 2;
     while (true) {
@@ -238,18 +243,51 @@ function repo_delete_range(int $id): void
     q('DELETE FROM ' . tbl('ranges') . ' WHERE id = ?', [$id]);
 }
 
+/**
+ * The URL slug for a set. Derived from its code, and suffixed when another set
+ * in the same range already holds that slug — which is allowed, because two
+ * sets in a range may share a code.
+ */
+function repo_unique_set_slug(int $rangeId, string $code, ?int $ignoreId = null): string
+{
+    $base = slugify($code, 'set');
+    $slug = $base;
+    $n    = 2;
+    while (true) {
+        $sql    = 'SELECT id FROM ' . tbl('sets') . ' WHERE range_id = ? AND slug = ?'
+                . ($ignoreId ? ' AND id <> ?' : '');
+        $params = $ignoreId ? [$rangeId, $slug, $ignoreId] : [$rangeId, $slug];
+        if (!q($sql, $params)->fetch()) {
+            return $slug;
+        }
+        $slug = $base . '-' . $n++;
+    }
+}
+
 function repo_create_set(int $rangeId, string $code, string $name): int
 {
     q(
-        'INSERT INTO ' . tbl('sets') . ' (range_id, code, name, created_at) VALUES (?, ?, ?, NOW())',
-        [$rangeId, $code, $name]
+        'INSERT INTO ' . tbl('sets') . ' (range_id, code, slug, name, created_at)
+         VALUES (?, ?, ?, ?, NOW())',
+        [$rangeId, $code, repo_unique_set_slug($rangeId, $code), $name]
     );
     return (int)db()->lastInsertId();
 }
 
 function repo_update_set(int $id, string $code, string $name): void
 {
-    q('UPDATE ' . tbl('sets') . ' SET code = ?, name = ? WHERE id = ?', [$code, $name, $id]);
+    $set = repo_set($id);
+    if (!$set) {
+        return;
+    }
+    $rangeId = (int)$set['range_id'];
+
+    // Keep the existing slug when the code has not changed, so live URLs hold.
+    $slug = strcasecmp($set['code'], $code) === 0
+        ? $set['slug']
+        : repo_unique_set_slug($rangeId, $code, $id);
+
+    q('UPDATE ' . tbl('sets') . ' SET code = ?, slug = ?, name = ? WHERE id = ?', [$code, $slug, $name, $id]);
 }
 
 function repo_delete_set(int $id): void

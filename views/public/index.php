@@ -60,7 +60,7 @@
           <?php foreach ($range['sets'] as $set): ?>
             <?php $complete = $set['mini_count'] > 0 && $set['owned_count'] === $set['mini_count']; ?>
             <a class="panel panel-hover set-card"
-               href="<?= e(url(rawurlencode($range['slug']) . '/' . rawurlencode($set['code']))) ?>">
+               href="<?= e(url(rawurlencode($range['slug']) . '/' . rawurlencode($set['slug']))) ?>">
               <div class="set-card-top">
                 <span class="set-code"><?= e($set['code']) ?></span>
                 <span class="set-name"><?= e($set['name']) ?></span>

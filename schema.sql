@@ -25,14 +25,19 @@ CREATE TABLE IF NOT EXISTS ll_ranges (
   KEY ix_ranges_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Two sets in the same range may carry the same code. The slug is what the
+-- public URL addresses, so the slug is what has to be unique -- it is derived
+-- from the code and given a numeric suffix when the code is already taken.
 CREATE TABLE IF NOT EXISTS ll_sets (
   id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   range_id   INT UNSIGNED NOT NULL,
   code       VARCHAR(40)  NOT NULL,
+  slug       VARCHAR(60)  NOT NULL,
   name       VARCHAR(160) NOT NULL,
   created_at DATETIME     NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY uq_sets_range_code (range_id, code),
+  UNIQUE KEY uq_sets_range_slug (range_id, slug),
+  KEY ix_sets_range_code (range_id, code),
   CONSTRAINT fk_sets_range FOREIGN KEY (range_id)
     REFERENCES ll_ranges (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -293,8 +293,9 @@ if (($seg[0] ?? '') === 'admin') {
                     flash('Set created.');
                 }
             } catch (PDOException $ex) {
-                // The unique key on (range_id, code) is the only one that can trip here.
-                flash('There is already a set with code ' . $code . ' in that range.');
+                // Codes may repeat within a range, so nothing here is expected
+                // to collide — report it rather than swallowing it.
+                flash(config('debug') ? $ex->getMessage() : 'That set could not be saved.');
             }
             back_to('admin');
         }
@@ -404,7 +405,7 @@ if ($seg === []) {
 
 // GET /{range-slug}/{set-code}
 if (count($seg) === 2) {
-    $set = repo_set_by_slug_code($seg[0], $seg[1]);
+    $set = repo_set_by_slugs($seg[0], $seg[1]);
     if (!$set) {
         not_found();
     }
