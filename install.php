@@ -89,9 +89,10 @@ $installed  = false;
 $locked     = false;
 
 try {
+    db(); // the connection itself, before any table question
     $installed = table_exists($usersTable);
     $locked    = $installed && row_count($usersTable) > 0;
-} catch (PDOException $ex) {
+} catch (Throwable $ex) {
     $fatal = $ex->getMessage();
 }
 
@@ -139,10 +140,26 @@ if ($action !== null && $fatal === null) {
   <hr class="hr">
 
   <?php if ($fatal !== null): ?>
-    <p class="form-error">Could not reach the database: <?= e($fatal) ?></p>
-    <p class="page-blurb">Check the four values in <code>config.php</code> against the one.com control panel.
-       If you are running this from your own machine rather than on one.com, the database also has to be
-       switched to external access there.</p>
+    <p class="form-error">Could not reach the database.</p>
+    <p class="page-blurb" style="font-family:monospace;font-size:12.5px"><?= e($fatal) ?></p>
+
+    <p class="page-blurb">These are the values <code>config.php</code> is handing to MySQL — the password
+       is not shown, but check the other three against the one.com control panel
+       (<em>Web hosting &rarr; MySQL/Database</em>). On one.com the database name and the user name are
+       usually the same string.</p>
+    <div class="tbl-scroll">
+      <table class="table">
+        <tbody>
+          <tr><td class="col-code">Host</td><td><?= e((string)config('db_host')) ?></td></tr>
+          <tr><td class="col-code">Database</td><td><?= e((string)config('db_name')) ?></td></tr>
+          <tr><td class="col-code">User</td><td><?= e((string)config('db_user')) ?></td></tr>
+          <tr><td class="col-code">Password</td><td><?= config('db_pass') === '' ? 'empty' : e(strlen((string)config('db_pass')) . ' characters') ?></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="page-blurb">If you are running this from your own machine rather than on one.com, the
+       database also has to be switched to external access in the control panel first.</p>
 
   <?php else: ?>
     <p class="page-blurb">

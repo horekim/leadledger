@@ -12,6 +12,17 @@
 
 require __DIR__ . '/src/bootstrap.php';
 
+set_exception_handler(static function (Throwable $ex): void {
+    if ($ex instanceof PDOException) {
+        db_unavailable($ex);
+    }
+    http_response_code(500);
+    if (!headers_sent()) {
+        header('Content-Type: text/plain; charset=utf-8');
+    }
+    echo config('debug') ? (string)$ex : "Something went wrong.\n";
+});
+
 auth_boot();
 
 /* — where are we? — */

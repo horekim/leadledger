@@ -49,22 +49,39 @@ function db(): PDO
         (string)config('db_name')
     );
 
-    try {
-        $pdo = new PDO($dsn, (string)config('db_user'), (string)config('db_pass'), [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ]);
-    } catch (PDOException $ex) {
-        http_response_code(500);
-        header('Content-Type: text/plain; charset=utf-8');
-        if (config('debug')) {
-            exit('Database connection failed: ' . $ex->getMessage() . "\n");
-        }
-        exit("The archive is unavailable right now.\n");
-    }
+    // Throws PDOException on failure — callers decide what the visitor sees.
+    // index.php turns it into a page; install.php prints the real reason.
+    $pdo = new PDO($dsn, (string)config('db_user'), (string)config('db_pass'), [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ]);
 
     return $pdo;
+}
+
+/**
+ * Last-resort handler for a database that will not answer. Shows the real
+ * reason when config.php has debug on, and points at the installer either way.
+ */
+function db_unavailable(Throwable $ex): void
+{
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=utf-8');
+
+    if (config('debug')) {
+        echo "Database error\n\n" . $ex->getMessage() . "\n\n";
+        echo 'host: ' . (string)config('db_host') . "\n";
+        echo 'name: ' . (string)config('db_name') . "\n";
+        echo 'user: ' . (string)config('db_user') . "\n";
+        exit;
+    }
+
+    exit(
+        "The archive is unavailable right now.\n\n" .
+        "If you are setting this up: open install.php, which reports the real\n" .
+        "reason, or set 'debug' => true in config.php to see it here.\n"
+    );
 }
 
 /** Run a statement and hand back the PDOStatement, ready to fetch from. */
