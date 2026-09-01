@@ -315,17 +315,14 @@ if (($seg[0] ?? '') === 'admin') {
         if (!repo_set($setId)) {
             not_found();
         }
-        if ($code === '' || $name === '') {
-            flash('A miniature needs both a code and a name.');
-            back_to('admin/sets/' . $setId);
-        }
 
         $existing = $id > 0 ? repo_miniature($id) : null;
         $photo    = $existing['photo'] ?? null;
+        $dropped  = null; // the old file, deleted only once the save succeeds
 
         if (($_POST['remove_photo'] ?? '0') === '1') {
-            upload_delete($photo);
-            $photo = null;
+            $dropped = $photo;
+            $photo   = null;
         }
 
         if (!empty($_FILES['photo']['name'])) {
@@ -334,8 +331,16 @@ if (($seg[0] ?? '') === 'admin') {
                 flash($err);
                 back_to('admin/sets/' . $setId);
             }
-            upload_delete($photo);
-            $photo = $stored;
+            $dropped = $existing['photo'] ?? null;
+            $photo   = $stored;
+        }
+
+        // A miniature is its photograph. The code and name are optional.
+        if ($photo === null) {
+            flash($existing
+                ? 'A miniature needs a photograph — choose a replacement before saving.'
+                : 'A miniature needs a photograph.');
+            back_to('admin/sets/' . $setId);
         }
 
         if ($existing) {
@@ -344,6 +349,10 @@ if (($seg[0] ?? '') === 'admin') {
         } else {
             repo_create_miniature($setId, $code, $name, $photo);
             flash('Miniature added.');
+        }
+
+        if ($dropped !== null && $dropped !== $photo) {
+            upload_delete($dropped);
         }
         redirect('admin/sets/' . $setId);
     }

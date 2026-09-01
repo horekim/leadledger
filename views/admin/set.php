@@ -54,7 +54,10 @@
           </thead>
           <tbody>
             <?php foreach ($miniatures as $m): ?>
-              <?php $photo = $m['photo'] ? asset($m['photo']) : ''; ?>
+              <?php
+                $photo = $m['photo'] ? asset($m['photo']) : '';
+                $label = repo_mini_label($m);
+              ?>
               <tr draggable="true" data-id="<?= e((string)$m['id']) ?>" tabindex="0"
                   data-drawer-open
                   data-code="<?= e($m['code']) ?>" data-name="<?= e($m['name']) ?>"
@@ -63,15 +66,15 @@
                 <td class="col-thumb">
                   <div class="plate thumb" <?= $photo ? 'style="background-image:url(\'' . e($photo) . '\')"' : '' ?>></div>
                 </td>
-                <td class="col-code"><?= e($m['code']) ?></td>
-                <td class="col-name"><?= e($m['name']) ?></td>
+                <td class="col-code"><?= $m['code'] !== null ? e($m['code']) : '<span class="no-info">No code</span>' ?></td>
+                <td class="col-name"><?= $m['name'] !== null ? e($m['name']) : '<span class="no-info">No name</span>' ?></td>
                 <td class="col-act">
                   <button type="button" class="icon-btn danger" data-confirm-open
                           data-kind="miniature" data-id="<?= e((string)$m['id']) ?>"
-                          data-title="Delete <?= e($m['name']) ?>?"
-                          data-body="This removes <?= e($m['code']) ?> from the set for every collector. It cannot be undone."
+                          data-title="Delete <?= e($label) ?>?"
+                          data-body="This removes <?= e($label) ?> from the set for every collector. It cannot be undone."
                           data-submit="Delete miniature"
-                          aria-label="Delete <?= e($m['name']) ?>">
+                          aria-label="Delete <?= e($label) ?>">
                     <span class="msym">delete</span>
                   </button>
                 </td>
@@ -124,13 +127,16 @@
     <div class="field-row">
       <div class="field">
         <label for="dw-code">Code</label>
-        <input class="input" id="dw-code" name="code" data-drawer-code required>
+        <input class="input" id="dw-code" name="code" data-drawer-code>
       </div>
       <div class="field">
         <label for="dw-name">Name</label>
-        <input class="input" id="dw-name" name="name" data-drawer-name required>
+        <input class="input" id="dw-name" name="name" data-drawer-name>
       </div>
     </div>
+    <p class="field-hint">A photograph is required. Code and name are optional.</p>
+
+    <p class="form-error" data-drawer-error hidden>A miniature needs a photograph.</p>
 
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" data-dialog-close>Cancel</button>

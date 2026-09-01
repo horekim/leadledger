@@ -454,3 +454,9 @@ tr.dragging { opacity: .45; }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+
+/* A miniature may carry no code and no name — the photograph is the record. */
+.no-info {
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 32%, transparent);
+}

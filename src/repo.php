@@ -275,7 +275,15 @@ function repo_range_blast_radius(int $rangeId): array
     return ['sets' => (int)$row['sets'], 'miniatures' => (int)$row['minis']];
 }
 
-function repo_create_miniature(int $setId, string $code, string $name, ?string $photo): int
+/** Blank code or name is absence, not an empty string. */
+function repo_blank_to_null(string $value): ?string
+{
+    $value = trim($value);
+    return $value === '' ? null : $value;
+}
+
+/** The photograph is required; the code and name are not. */
+function repo_create_miniature(int $setId, string $code, string $name, string $photo): int
 {
     $row  = q('SELECT COALESCE(MAX(sort_index), -1) AS mx FROM ' . tbl('miniatures') . ' WHERE set_id = ?', [$setId])->fetch();
     $next = (int)$row['mx'] + 1;
@@ -283,17 +291,27 @@ function repo_create_miniature(int $setId, string $code, string $name, ?string $
     q(
         'INSERT INTO ' . tbl('miniatures') . ' (set_id, code, name, photo, sort_index, created_at)
          VALUES (?, ?, ?, ?, ?, NOW())',
-        [$setId, $code, $name, $photo, $next]
+        [$setId, repo_blank_to_null($code), repo_blank_to_null($name), $photo, $next]
     );
     return (int)db()->lastInsertId();
 }
 
-function repo_update_miniature(int $id, string $code, string $name, ?string $photo): void
+function repo_update_miniature(int $id, string $code, string $name, string $photo): void
 {
     q(
         'UPDATE ' . tbl('miniatures') . ' SET code = ?, name = ?, photo = ? WHERE id = ?',
-        [$code, $name, $photo, $id]
+        [repo_blank_to_null($code), repo_blank_to_null($name), $photo, $id]
     );
+}
+
+/**
+ * What to call a miniature that has neither. Used wherever one is referred to
+ * in prose — confirmations, page titles, accessible labels.
+ */
+function repo_mini_label(array $m): string
+{
+    $parts = array_filter([$m['code'] ?? null, $m['name'] ?? null]);
+    return $parts ? implode(' ', $parts) : 'this miniature';
 }
 
 function repo_delete_miniature(int $id): void

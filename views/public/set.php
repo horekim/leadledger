@@ -109,7 +109,8 @@ $allOwned = $total > 0 && $ownedN === $total;
         <?php foreach ($shown as $m): ?>
           <?php
             $photo = $m['photo'] ? asset($m['photo']) : null;
-            $label = ($m['owned'] ? 'Owned — ' : 'Not owned — ') . $m['code'] . ' ' . $m['name'];
+            $what  = repo_mini_label($m);
+            $label = ($m['owned'] ? 'Owned — ' : 'Not owned — ') . $what;
           ?>
           <div class="card mini-card<?= $m['owned'] ? ' is-owned' : '' ?>" data-mini="<?= e((string)$m['id']) ?>">
             <?php if ($signed): ?>
@@ -121,7 +122,7 @@ $allOwned = $total > 0 && $ownedN === $total;
                         <?= $photo ? 'style="background-image:url(\'' . e($photo) . '\')"' : '' ?>></span>
                 </button>
                 <button type="submit" class="tick" aria-pressed="<?= $m['owned'] ? 'true' : 'false' ?>"
-                        aria-label="<?= e($m['owned'] ? 'Mark not owned' : 'Mark owned') ?>">
+                        aria-label="<?= e(($m['owned'] ? 'Mark not owned: ' : 'Mark owned: ') . $what) ?>">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        stroke-width="3" stroke-linecap="square" aria-hidden="true">
                     <path d="M5 12.5 10 17.5 19 7"/>
@@ -129,11 +130,11 @@ $allOwned = $total > 0 && $ownedN === $total;
                 </button>
               </form>
             <?php else: ?>
-              <a class="plate mini-plate" href="<?= e(url('sign-in')) ?>" aria-label="Sign in to tick <?= e($m['name']) ?>">
+              <a class="plate mini-plate" href="<?= e(url('sign-in')) ?>" aria-label="Sign in to tick <?= e($what) ?>">
                 <span class="mini-photo<?= $photo ? '' : ' is-blank' ?>"
                       <?= $photo ? 'style="background-image:url(\'' . e($photo) . '\')"' : '' ?>></span>
               </a>
-              <a class="tick" href="<?= e(url('sign-in')) ?>" aria-label="Sign in to tick <?= e($m['name']) ?>">
+              <a class="tick" href="<?= e(url('sign-in')) ?>" aria-label="Sign in to tick <?= e($what) ?>">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      stroke-width="3" stroke-linecap="square" aria-hidden="true">
                   <path d="M5 12.5 10 17.5 19 7"/>
@@ -141,9 +142,14 @@ $allOwned = $total > 0 && $ownedN === $total;
               </a>
             <?php endif; ?>
 
+            <?php /* Code and name are both optional; a card may carry neither. */ ?>
             <div class="mini-caption">
-              <span class="mini-code"><?= e($m['code']) ?></span>
-              <span class="mini-name"><?= e($m['name']) ?></span>
+              <?php if ($m['code'] === null && $m['name'] === null): ?>
+                <span class="no-info">No info</span>
+              <?php else: ?>
+                <?php if ($m['code'] !== null): ?><span class="mini-code"><?= e($m['code']) ?></span><?php endif; ?>
+                <?php if ($m['name'] !== null): ?><span class="mini-name"><?= e($m['name']) ?></span><?php endif; ?>
+              <?php endif; ?>
             </div>
           </div>
         <?php endforeach; ?>

@@ -251,6 +251,20 @@
     var photoRow  = $('[data-photo-row]', drawer);
     var photoName = $('[data-photo-name]', drawer);
     var removeFl  = $('[data-drawer-remove]', drawer);
+    var errorEl   = $('[data-drawer-error]', drawer);
+    var drawerForm = $('form', drawer);
+
+    // The photograph is the one thing a miniature cannot be saved without.
+    // The server enforces it too; this is just so the drawer stays open.
+    if (drawerForm) {
+      drawerForm.addEventListener('submit', function (ev) {
+        if (imgEl.hidden) {
+          ev.preventDefault();
+          if (errorEl) { errorEl.hidden = false; }
+          dropzone.focus();
+        }
+      });
+    }
 
     function showPhoto(url, name) {
       if (url) {
@@ -274,6 +288,7 @@
       dt.items.add(f);
       file.files = dt.files;
       removeFl.value = '0';
+      if (errorEl) { errorEl.hidden = true; }
       showPhoto(URL.createObjectURL(f), f.name);
     }
 
@@ -312,13 +327,15 @@
       ev.preventDefault();
 
       var isNew = !trigger.dataset.id;
+      var known = trigger.dataset.name || trigger.dataset.code || 'Edit miniature';
       $('[data-drawer-id]', drawer).value = trigger.dataset.id || '';
       $('[data-drawer-code]', drawer).value = trigger.dataset.code || '';
       $('[data-drawer-name]', drawer).value = trigger.dataset.name || '';
       $('[data-drawer-kicker]', drawer).textContent = isNew ? 'New miniature' : 'Edit miniature';
-      $('[data-drawer-title]', drawer).textContent = isNew ? 'New miniature' : (trigger.dataset.name || 'Edit miniature');
+      $('[data-drawer-title]', drawer).textContent = isNew ? 'New miniature' : known;
       file.value = '';
       removeFl.value = '0';
+      if (errorEl) { errorEl.hidden = true; }
       showPhoto(trigger.dataset.photo || '', trigger.dataset.photoName || '');
 
       openDialog(drawer);

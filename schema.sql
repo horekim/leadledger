@@ -37,12 +37,14 @@ CREATE TABLE IF NOT EXISTS ll_sets (
     REFERENCES ll_ranges (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- A miniature is its photograph: that is the one required field. The code and
+-- the name are both optional, and NULL where absent.
 CREATE TABLE IF NOT EXISTS ll_miniatures (
   id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   set_id     INT UNSIGNED NOT NULL,
-  code       VARCHAR(60)  NOT NULL,
-  name       VARCHAR(190) NOT NULL,
-  photo      VARCHAR(255) NULL DEFAULT NULL,
+  code       VARCHAR(60)  NULL DEFAULT NULL,
+  name       VARCHAR(190) NULL DEFAULT NULL,
+  photo      VARCHAR(255) NOT NULL,
   sort_index INT          NOT NULL DEFAULT 0,
   created_at DATETIME     NOT NULL,
   PRIMARY KEY (id),

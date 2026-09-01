@@ -74,6 +74,13 @@ hostname it shows.
 `src/` and `views/` are blocked by `.htaccess`; nothing under `uploads/` is ever
 executed.
 
+### Updating a database that is already live
+
+`install.php` only ever creates tables. When the schema changes afterwards,
+upload `migrate.php`, open it while signed in as the catalogue owner, and it
+reports what it will change before changing anything. It is idempotent, and
+tells you when there is nothing left to do — delete it then.
+
 ## Routes
 
 | Route | |
@@ -91,6 +98,14 @@ executed.
 Everything works without JavaScript — the ticks, filters, density switcher and
 admin forms are all real links and form posts. JavaScript upgrades them to
 optimistic toggles, modal dialogs and drag-and-drop.
+
+## Where this departs from the handoff
+
+The handoff treats a miniature's code and name as given. In this build **the
+photograph is the required field** and the code and name are both optional,
+stored as `NULL` when absent. A card with neither shows the design's flush-left
+`No info` line; the admin table says `No code` / `No name`. The drawer and the
+server both refuse to save a miniature without a photograph.
 
 ## The handoff's known gaps, and what happened to them
 
