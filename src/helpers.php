@@ -73,10 +73,19 @@ function slugify(string $s, string $fallback = 'item'): string
 /**
  * Sets sort by code, numeric-aware: C01 < C06 < C11, RT01 < RT101.
  * MySQL cannot do this in ORDER BY, so it happens here.
+ *
+ * Two sets in a range may share a code, so the comparison falls through to the
+ * name and finally the id. Without that the order of a tied pair is whatever
+ * the database happened to return, which differs between queries — the same
+ * two sets would list one way on the index and the other way in the rail.
  */
 function sort_sets_by_code(array &$sets): void
 {
-    usort($sets, static fn($a, $b) => strnatcasecmp($a['code'], $b['code']));
+    usort($sets, static function (array $a, array $b): int {
+        return strnatcasecmp($a['code'], $b['code'])
+            ?: strnatcasecmp($a['name'], $b['name'])
+            ?: ((int)$a['id'] <=> (int)$b['id']);
+    });
 }
 
 function json_out($data, int $status = 200): void

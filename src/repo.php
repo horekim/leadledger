@@ -26,7 +26,7 @@ function repo_catalogue(?int $userId): array
          LEFT JOIN ' . tbl('miniatures') . ' m  ON m.set_id = s.id
          LEFT JOIN ' . tbl('ownership') . ' o   ON o.miniature_id = m.id AND o.user_id = :uid
           GROUP BY r.id, r.name, r.slug, s.id, s.code, s.slug, s.name
-          ORDER BY r.name ASC';
+          ORDER BY r.name ASC, r.id ASC, s.code ASC, s.name ASC, s.id ASC';
 
     $rows = q($sql, ['uid' => $userId ?? 0])->fetchAll();
 
