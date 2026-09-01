@@ -5,15 +5,18 @@
  * Copy this file to config.php and fill in the four values from the one.com
  * control panel (Web hosting -> MySQL/Database). config.php is gitignored.
  *
- *  - Running ON one.com (the normal case): DB_HOST is the internal hostname
- *    one.com shows next to the database, usually something like
- *    "xxxxxxx.mysql.service.one.com". Some plans use "localhost".
- *  - Running from your Mac against one.com: you must first switch the database
- *    to "external access" in the control panel, then use the external hostname.
+ *  - Running ON one.com (the normal case): db_host is "localhost". The database
+ *    sits on the same machine as the site, so the external hostname the control
+ *    panel shows is not what you want here.
+ *  - Running from your Mac against one.com: switch the database to external
+ *    access in the control panel first, then use the hostname it shows there
+ *    (something like "xxxxxxx.mysql.service.one.com").
+ *
+ * On one.com the database name and the user name are usually the same string.
  */
 
 return [
-    'db_host' => 'CHANGEME.mysql.service.one.com',
+    'db_host' => 'localhost',
     'db_name' => 'CHANGEME',
     'db_user' => 'CHANGEME',
     'db_pass' => 'CHANGEME',

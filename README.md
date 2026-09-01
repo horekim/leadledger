@@ -27,11 +27,15 @@ carries the **`ll_`** prefix, so it can share a database with anything else.
 If you would rather create the tables by hand, paste [`schema.sql`](schema.sql)
 into phpMyAdmin instead of step 4.
 
+`db_host` is **`localhost`** when the site runs on one.com — the database is on
+the same machine, so the external hostname the control panel shows is not the
+one to use. The database name and the user name are usually the same string.
+
 ### Running it against one.com from your own machine
 
 one.com keeps MySQL closed to the outside by default. Switch the database to
-external access in the control panel first, then use the external hostname in
-`config.php`.
+external access in the control panel first, and *then* use the external
+hostname it shows.
 
 ## How it is laid out
 
