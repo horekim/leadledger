@@ -27,6 +27,23 @@ carries the **`ll_`** prefix, so it can share a database with anything else.
 If you would rather create the tables by hand, paste [`schema.sql`](schema.sql)
 into phpMyAdmin instead of step 4.
 
+### If the URLs 404 (a WordPress site at the domain root, for instance)
+
+Clean URLs need Apache to actually read this app's `.htaccess`. Two things stop
+that: the file never got uploaded (FTP clients and file managers routinely hide
+dotfiles), or a rewrite further up the tree claims the request first.
+
+Either way there is a way through that needs no rewriting at all — add this to
+`config.php`:
+
+```php
+'pretty_urls' => false,
+```
+
+Routes then address the front controller directly — `/leadledger/index.php/sign-in`
+— which nothing upstream can intercept. Stylesheets, scripts and photographs
+keep their own plain paths.
+
 `db_host` is **`localhost`** when the site runs on one.com — the database is on
 the same machine, so the external hostname the control panel shows is not the
 one to use. The database name and the user name are usually the same string.

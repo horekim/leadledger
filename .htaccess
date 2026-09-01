@@ -6,6 +6,11 @@ Options -Indexes
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # In a subfolder — /leadledger/ under a WordPress site, say — uncomment this
+  # and set it to that folder, so the rewrite cannot fall through to the
+  # .htaccess at the domain root.
+  # RewriteBase /leadledger/
+
   # Source, templates and the design handoff are not web-servable.
   RewriteRule ^(src|views|design_handoff_lead_ledger)/ - [F,L]
 

@@ -10,9 +10,9 @@ $message = flash();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($title !== '' ? $title . ' — ' . config('site_name') : config('site_name')) ?></title>
-<link rel="stylesheet" href="<?= e(url('assets/ds/styles.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('assets/ds/styles.css')) ?>">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0">
-<link rel="stylesheet" href="<?= e(url('assets/app.css')) ?>">
+<link rel="stylesheet" href="<?= e(asset('assets/app.css')) ?>">
 <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
 <meta name="base-url" content="<?= e(url('')) ?>">
 </head>
@@ -49,6 +49,6 @@ $message = flash();
 
 <?= $content ?>
 
-<script src="<?= e(url('assets/app.js')) ?>" defer></script>
+<script src="<?= e(asset('assets/app.js')) ?>" defer></script>
 </body>
 </html>

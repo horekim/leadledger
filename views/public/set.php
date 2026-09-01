@@ -108,7 +108,7 @@ $allOwned = $total > 0 && $ownedN === $total;
       <div class="mini-grid" data-density="<?= e($density) ?>">
         <?php foreach ($shown as $m): ?>
           <?php
-            $photo = $m['photo'] ? url($m['photo']) : null;
+            $photo = $m['photo'] ? asset($m['photo']) : null;
             $label = ($m['owned'] ? 'Owned — ' : 'Not owned — ') . $m['code'] . ' ' . $m['name'];
           ?>
           <div class="card mini-card<?= $m['owned'] ? ' is-owned' : '' ?>" data-mini="<?= e((string)$m['id']) ?>">

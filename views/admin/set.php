@@ -54,7 +54,7 @@
           </thead>
           <tbody>
             <?php foreach ($miniatures as $m): ?>
-              <?php $photo = $m['photo'] ? url($m['photo']) : ''; ?>
+              <?php $photo = $m['photo'] ? asset($m['photo']) : ''; ?>
               <tr draggable="true" data-id="<?= e((string)$m['id']) ?>" tabindex="0"
                   data-drawer-open
                   data-code="<?= e($m['code']) ?>" data-name="<?= e($m['name']) ?>"

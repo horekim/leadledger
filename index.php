@@ -28,15 +28,28 @@ auth_boot();
 /* — where are we? — */
 
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-$uri    = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
-$base   = base_url();
 
-if ($base !== '' && str_starts_with($uri, $base)) {
-    $uri = substr($uri, strlen($base));
+// index.php/sign-in — the front controller was addressed directly, so the route
+// is in PATH_INFO and no rewriting was involved.
+$pathInfo = $_SERVER['PATH_INFO'] ?? '';
+
+if ($pathInfo !== '') {
+    $path = trim(rawurldecode($pathInfo), '/');
+} else {
+    $uri  = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+    $base = base_url();
+
+    if ($base !== '' && str_starts_with($uri, $base)) {
+        $uri = substr($uri, strlen($base));
+    }
+    // A request straight to /leadledger/index.php has no route of its own.
+    $path = trim(rawurldecode($uri), '/');
+    if ($path === 'index.php') {
+        $path = '';
+    }
 }
 
-$path = trim(rawurldecode($uri), '/');
-$seg  = $path === '' ? [] : explode('/', $path);
+$seg = $path === '' ? [] : explode('/', $path);
 
 /** Density is remembered for the session, per the design. */
 function density(): string

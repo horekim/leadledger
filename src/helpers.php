@@ -21,9 +21,31 @@ function base_url(): string
     return $base;
 }
 
-function url(string $path = ''): string
+/**
+ * A URL for a static file — stylesheets, scripts, uploaded photographs.
+ * Never goes through the front controller.
+ */
+function asset(string $path = ''): string
 {
     return base_url() . '/' . ltrim($path, '/');
+}
+
+/**
+ * A URL for a route.
+ *
+ * With pretty_urls on (the default) this needs mod_rewrite to fold everything
+ * into index.php. Turn it off in config.php and routes address index.php
+ * directly instead — /leadledger/index.php/sign-in — which needs no rewriting
+ * at all, and so cannot be intercepted by a WordPress .htaccess further up.
+ */
+function url(string $path = ''): string
+{
+    $prefix = base_url();
+    if (config('pretty_urls') === false) { // absent means on
+        $prefix .= '/index.php';
+    }
+    $path = ltrim($path, '/');
+    return $path === '' ? ($prefix === '' ? '/' : $prefix) : $prefix . '/' . $path;
 }
 
 function redirect(string $path): void

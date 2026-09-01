@@ -27,6 +27,14 @@ return [
     // Shown in the browser tab.
     'site_name' => 'Lead Ledger',
 
+    // true  — clean URLs (/leadledger/sign-in). Needs mod_rewrite and the
+    //         bundled .htaccess to actually be read by Apache.
+    // false — routes go through the front controller directly
+    //         (/leadledger/index.php/sign-in). Works with no .htaccess at all,
+    //         so nothing further up the tree — a WordPress install at the
+    //         domain root, say — can intercept them.
+    'pretty_urls' => true,
+
     // Turn on while setting up; turn off once live.
     'debug' => false,
 ];
