@@ -21,10 +21,22 @@ $shown = array_values(array_filter($miniatures, static function (array $m) use (
 
 $setUrl = static fn(array $r, array $s): string => url(rawurlencode($r['slug']) . '/' . rawurlencode($s['slug']));
 $here   = $setUrl(['slug' => $range['slug']], ['slug' => $set['slug']]);
-$qs     = static function (array $over) use ($here, $filter, $density): string {
+/**
+ * Links for the filter bar.
+ *
+ * `show` is dropped when it is All, because the filter is read fresh from the
+ * query string each request and All is what its absence already means.
+ *
+ * `density` is always carried, even when it is the default. Density persists
+ * in the session, so an absent parameter means "keep what you had", not
+ * "compact" — dropping it would make the Compact button unable to select
+ * itself once another density was chosen.
+ */
+$qs = static function (array $over) use ($here, $filter, $density): string {
     $params = array_merge(['show' => $filter, 'density' => $density], $over);
-    if ($params['show'] === 'all')          { unset($params['show']); }
-    if ($params['density'] === 'compact')   { unset($params['density']); }
+    if ($params['show'] === 'all') {
+        unset($params['show']);
+    }
     return $here . ($params ? '?' . http_build_query($params) : '');
 };
 $allOwned = $total > 0 && $ownedN === $total;
