@@ -1,0 +1,13 @@
+# Local credentials — never committed
+config.php
+
+# Uploaded photographs (keep the four seed samples, ignore the rest)
+uploads/*
+!uploads/Scum-1.jpg
+!uploads/Extech.jpg
+!uploads/Hero.jpg
+!uploads/Female_Warrior_Jayne.jpg
+!uploads/.htaccess
+
+.DS_Store
+**/.DS_Store

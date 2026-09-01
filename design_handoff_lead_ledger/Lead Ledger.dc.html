@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-572d3484-8c7e-4839-9228-29d91245b466/styles.css">
+<script src="_ds/modernist-572d3484-8c7e-4839-9228-29d91245b466/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0">
+<style>
+body { margin: 0; }
+a { color: var(--color-accent); }
+a:hover { color: var(--color-accent-700); }
+/* photographs print in pure black and white, flat on the grid */
+.plate { position: relative; overflow: hidden; background: var(--color-neutral-900); }
+.panel { background: var(--color-surface); border-radius: var(--radius-md); }
+.panel-hover:hover { background: var(--color-accent-100); }
+/* the system organises with strong 2px rules, never hairlines */
+.rule-b { border-bottom: 2px solid var(--color-divider); }
+.rule-tb { border-top: 2px solid var(--color-divider); border-bottom: 2px solid var(--color-divider); }
+.row-hit:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.msym { font-family: "Material Symbols Outlined"; font-size: 20px; line-height: 1; font-weight: 400; }
+.icon-btn { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; cursor: pointer; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
+.icon-btn:hover { background: color-mix(in srgb, var(--color-text) 8%, transparent); color: var(--color-text); }
+.icon-btn.danger:hover { background: var(--color-accent-100); color: var(--color-accent-700); }
+.tbl-scroll { overflow-x: auto; }
+@media (max-width: 900px) {
+  .app-header { padding: 10px 16px !important; gap: 12px !important; }
+  .app-header .brand-sub { display: none; }
+  .shell { display: block !important; }
+  .rail { display: none !important; }
+  .page-main { padding: 20px 16px 72px !important; }
+  .page-head { flex-direction: column; align-items: flex-start !important; gap: 16px !important; }
+  .page-head h1 { font-size: 32px !important; }
+  .stat-row { gap: 20px !important; text-align: left !important; }
+  .filter-bar { position: static !important; }
+  .admin-shell { display: block !important; }
+  .admin-rail {
+    position: static !important; height: auto !important;
+    display: flex !important; flex-direction: row !important;
+    border-right: 0 !important; border-bottom: 2px solid var(--color-divider) !important;
+    padding: 0 !important; overflow-x: auto;
+  }
+  .admin-main { padding: 20px 16px 60px !important; }
+  .section-head { flex-direction: column; align-items: flex-start !important; gap: 12px !important; }
+  .section-head h2 { font-size: 26px !important; }
+  .auth-shell { display: block !important; }
+  .auth-form { padding: 32px 16px 40px !important; max-width: none !important; }
+  .auth-form h1 { font-size: 34px !important; }
+  .auth-aside { border-left: 0 !important; border-top: 2px solid var(--color-divider) !important; padding: 32px 16px 44px !important; }
+  .set-grid { grid-template-columns: 1fr !important; }
+  .mini-grid { grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)) !important; gap: 14px !important; }
+  .drawer-panel { width: 100% !important; max-width: 100% !important; border-left: 0 !important; padding: 18px 16px 40px !important; }
+  .range-head { flex-wrap: wrap; }
+}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body)">
+
+  <sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+    <header style="position:sticky;top:0;z-index:30;background:var(--color-bg);border-bottom:2px solid var(--color-divider)">
+      <div class="app-header" style="display:flex;align-items:center;gap:26px;padding:12px 26px">
+        <a href="#" onClick="{{ goBrowse }}" style="display:flex;align-items:baseline;gap:10px;margin-right:auto;text-decoration:none;color:inherit">
+          <span style="font-family:var(--font-heading);font-weight:800;font-size:20px;letter-spacing:-.02em;text-transform:uppercase">Lead Ledger</span>
+          <span class="brand-sub" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 45%,transparent)">Oldhammer archive</span>
+        </a>
+        <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;align-items:center;gap:10px;flex:none">
+            <button class="btn btn-ghost" onClick="{{ signOut }}" style="white-space:nowrap;flex:none">Sign out</button>
+            <button class="btn btn-secondary" onClick="{{ headerNav }}" style="white-space:nowrap;flex:none;justify-content:flex-start;gap:5px"><span style="{{ headerNavIconStyle }}" class="msym">arrow_back</span>{{ headerNavLabel }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ showSignInButton }}" hint-placeholder-val="{{ false }}">
+          <button class="btn btn-secondary" onClick="{{ openLogin }}" style="white-space:nowrap;flex:none">Sign in</button>
+        </sc-if>
+      </div>
+    </header>
+  </sc-if>
+
+  <sc-if value="{{ isBrowseLike }}" hint-placeholder-val="{{ true }}">
+    <div class="shell" style="{{ shellStyle }}">
+
+      <sc-if value="{{ isSetPage }}" hint-placeholder-val="{{ false }}">
+      <aside class="rail" style="border-right:2px solid var(--color-divider);position:sticky;top:53px;height:calc(100vh - 53px);overflow:auto;padding:20px 0 40px">
+        <div style="padding:0 20px 14px">
+          <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Ranges</div>
+        </div>
+        <sc-for list="{{ tree }}" as="r" hint-placeholder-count="5">
+          <div style="border-top:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)">
+            <button onClick="{{ r.toggle }}" style="width:100%;display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:9px;padding:10px 20px;background:transparent;border:0;cursor:pointer;text-align:left;font-family:var(--font-heading);font-size:15px;color:var(--color-text)">
+              <span style="{{ r.caretStyle }}">›</span>
+              <span>{{ r.name }}</span>
+              <span style="font-family:var(--font-body);font-size:11px;color:color-mix(in srgb,var(--color-text) 45%,transparent)">{{ r.count }}</span>
+            </button>
+            <sc-if value="{{ r.expanded }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:0 0 8px">
+                <sc-for list="{{ r.sets }}" as="st" hint-placeholder-count="4">
+                  <button onClick="{{ st.select }}" style="{{ st.style }}">
+                    <span style="font-family:var(--font-heading);letter-spacing:.06em;color:var(--color-accent);min-width:38px">{{ st.code }}</span>
+                    <span style="flex:1;text-align:left">{{ st.name }}</span>
+                    <span style="font-size:10px;letter-spacing:.06em;opacity:.6">{{ st.ownedLabel }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </aside>
+      </sc-if>
+
+      <main class="page-main" style="{{ mainStyle }}">
+
+        <sc-if value="{{ isIndexOrSet }}" hint-placeholder-val="{{ true }}">
+          <div class="page-head" style="{{ pageHeadStyle }}">
+            <div>
+              <sc-if value="{{ isSetPage }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase">
+                  <a href="#" onClick="{{ goIndex }}" style="color:var(--color-accent);text-decoration:none">← All sets</a>
+                  <span style="color:color-mix(in srgb,var(--color-text) 28%,transparent)">/</span>
+                  <span style="color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ crumb }}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ isIndex }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:7px">{{ crumb }}</div>
+              </sc-if>
+              <h1 style="font-size:44px;margin:0 0 5px;line-height:1">{{ heading }}</h1>
+              <sc-if value="{{ isSetPage }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ currentSetOwnedLabel }}</div>
+              </sc-if>
+              <p style="margin:0;max-width:58ch;font-size:13.5px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 60%,transparent);text-wrap:pretty">{{ blurb }}</p>
+            </div>
+            <sc-if value="{{ isIndex }}" hint-placeholder-val="{{ true }}">
+            <div class="stat-row" style="display:flex;gap:24px;text-align:right;flex:none">
+              <div>
+                <div style="font-family:var(--font-heading);font-size:26px;line-height:1">{{ totalLabel }}</div>
+                <div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Miniatures</div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-heading);font-size:26px;line-height:1">{{ setTotalLabel }}</div>
+                <div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Sets</div>
+              </div>
+              <div>
+                <div style="font-family:var(--font-heading);font-size:26px;line-height:1;color:var(--color-accent)">{{ ownedCount }}</div>
+                <div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">You own</div>
+              </div>
+            </div>
+            </sc-if>
+          </div>
+
+          <div class="filter-bar rule-b" style="position:sticky;top:53px;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 0;background-color:var(--color-bg);margin-bottom:26px">
+            <sc-if value="{{ isSetPage }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;border:1px solid var(--color-divider)">
+              <sc-for list="{{ ownFilterOpts }}" as="o" hint-placeholder-count="3">
+                <button onClick="{{ o.onClick }}" style="{{ o.style }}">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <div style="{{ resultLabelStyle }}">{{ resultLabel }}</div>
+            <div style="display:flex;border:1px solid var(--color-divider)">
+              <sc-for list="{{ densityOpts }}" as="d" hint-placeholder-count="3">
+                <button onClick="{{ d.onClick }}" title="{{ d.label }}" style="{{ d.style }}">{{ d.glyph }}</button>
+              </sc-for>
+            </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isIndex }}" hint-placeholder-val="{{ true }}">
+          <sc-for list="{{ rangeSections }}" as="r" hint-placeholder-count="5">
+            <section style="margin-bottom:44px">
+              <div style="display:flex;align-items:baseline;gap:12px;padding-bottom:9px;margin-bottom:18px" class="rule-b">
+                <h3 style="margin:0;font-size:24px">{{ r.name }}</h3>
+                <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 48%,transparent)">{{ r.meta }}</span>
+                <span style="margin-left:auto;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ r.ownedLabel }}</span>
+              </div>
+              <div class="set-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:22px">
+                <sc-for list="{{ r.sets }}" as="st" hint-placeholder-count="4">
+                  <div onClick="{{ st.open }}" class="panel panel-hover" style="cursor:pointer;display:flex;flex-direction:column;gap:13px;padding:15px 16px">
+                    <div style="display:flex;align-items:flex-start;gap:12px">
+                      <span style="font-family:var(--font-heading);font-size:14px;letter-spacing:.08em;color:var(--color-accent);flex:none;min-width:44px">{{ st.code }}</span>
+                      <span style="font-family:var(--font-heading);font-size:20px;line-height:1.1;flex:1;min-width:0">{{ st.name }}</span>
+                      <div style="{{ st.completeStyle }}">✓</div>
+                    </div>
+                    <div style="margin-top:auto">
+                      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent);margin-bottom:5px">
+                        <span>{{ st.countLabel }}</span>
+                        <span>{{ st.ownedLabel }}</span>
+                      </div>
+                      <div style="height:4px;background:var(--color-neutral-300);overflow:hidden"><div style="{{ st.barStyle }}"></div></div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </section>
+          </sc-for>
+        </sc-if>
+
+        <sc-for list="{{ setGroups }}" as="g" hint-placeholder-count="3">
+          <section style="margin-bottom:40px">
+            <sc-if value="{{ g.showHeader }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:baseline;gap:12px;padding-bottom:9px;margin-bottom:18px" class="rule-b">
+              <span style="font-family:var(--font-heading);font-size:14px;letter-spacing:.08em;color:var(--color-accent)">{{ g.code }}</span>
+              <h3 style="margin:0;font-size:22px">{{ g.name }}</h3>
+              <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 48%,transparent)">{{ g.meta }}</span>
+              <span style="margin-left:auto;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ g.ownedLabel }}</span>
+              <button onClick="{{ g.claimAll }}" class="btn btn-ghost" style="font-size:11.5px">Tick whole set</button>
+            </div>
+            </sc-if>
+            <div class="mini-grid" style="{{ gridStyle }}">
+              <sc-for list="{{ g.minis }}" as="m" hint-placeholder-count="8">
+                <div class="mini-card card" style="{{ m.cardStyle }}">
+                  <div class="plate" style="position:relative;aspect-ratio:3/4;display:grid;place-items:center;cursor:pointer" onClick="{{ m.toggle }}">
+                    <div style="{{ m.photoStyle }}"></div>
+                    <div style="{{ m.stampStyle }}">OWNED</div>
+                    <div style="{{ m.foldStyle }}"></div>
+                    <button onClick="{{ m.toggle }}" title="Mark as owned" style="{{ m.boxStyleFloat }}">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="{{ m.tickStyle }}"><path d="m5 12.5 4.5 4.5L19 7"></path></svg>
+                    </button>
+                  </div>
+                  <sc-if value="{{ noInfo }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 32%,transparent)">No info</div>
+                  </sc-if>
+                  <sc-if value="{{ showCaption }}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <sc-if value="{{ showCode }}" hint-placeholder-val="{{ true }}">
+                        <div style="{{ m.codeStyle }}">{{ m.code }}</div>
+                      </sc-if>
+                      <sc-if value="{{ showName }}" hint-placeholder-val="{{ true }}">
+                        <div style="{{ m.nameStyle }}">{{ m.name }}</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+        </sc-for>
+
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:56px 0;border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider)">
+            <div style="font-family:var(--font-heading);font-size:20px;margin-bottom:4px">{{ emptyTitle }}</div>
+            <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ emptyBody }}</div>
+          </div>
+        </sc-if>
+
+      </main>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+    <div class="admin-shell" style="display:grid;grid-template-columns:200px minmax(0,1fr);min-height:calc(100vh - 53px)">
+      <aside class="admin-rail" style="border-right:2px solid var(--color-divider);background:var(--color-surface);padding:18px 0;display:flex;flex-direction:column;position:sticky;top:53px;height:calc(100vh - 53px)">
+        <sc-for list="{{ adminNav }}" as="n" hint-placeholder-count="5">
+          <a href="#" onClick="{{ n.onClick }}" style="{{ n.style }}">{{ n.label }}</a>
+        </sc-for>
+      </aside>
+
+      <main class="admin-main" style="padding:22px 26px 60px;min-width:0">
+
+        <sc-if value="{{ isAdminRanges }}" hint-placeholder-val="{{ true }}">
+          <div class="section-head rule-b" style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:18px;padding-bottom:14px">
+            <div>
+              <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent);margin-bottom:5px">Manage</div>
+              <h2 style="margin:0">Ranges &amp; sets</h2>
+            </div>
+            <button class="btn btn-primary" onClick="{{ newRange }}" style="justify-content:flex-start;gap:5px"><span class="msym" style="font-size:16px">add</span>New range</button>
+          </div>
+
+          <sc-for list="{{ adminRanges }}" as="r" hint-placeholder-count="5">
+            <section style="margin-bottom:34px">
+              <div class="range-head" style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+                <h3 style="margin:0;font-size:22px">{{ r.name }}</h3>
+                <span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ r.meta }}</span>
+                <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+                  <button class="btn btn-secondary" onClick="{{ r.editRange }}" style="font-size:12px;justify-content:flex-start;gap:5px"><span class="msym" style="font-size:16px">edit</span>Edit range</button>
+                  <button class="btn btn-primary" onClick="{{ r.addSet }}" style="font-size:12px;justify-content:flex-start;gap:5px"><span class="msym" style="font-size:16px">add</span>Add set</button>
+                </div>
+              </div>
+              <sc-if value="{{ r.isEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:22px 0 26px;border-top:2px solid var(--color-divider)">
+                  <div style="font-family:var(--font-heading);font-size:15px;margin-bottom:3px">No sets in this range yet</div>
+                  <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">Add a set to start listing miniatures under {{ r.name }}.</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ r.hasSets }}" hint-placeholder-val="{{ true }}">
+              <div class="tbl-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width:110px">Code</th>
+                    <th>Set</th>
+                    <th style="width:130px">Miniatures</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <sc-for list="{{ r.sets }}" as="st" hint-placeholder-count="4">
+                    <tr class="row-hit" onClick="{{ st.open }}" style="cursor:pointer">
+                      <td style="font-family:var(--font-heading);letter-spacing:.08em">{{ st.code }}</td>
+                      <td style="font-weight:500">{{ st.name }}</td>
+                      <td style="font-size:13px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">{{ st.count }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+              </div>
+              </sc-if>
+            </section>
+          </sc-for>
+        </sc-if>
+
+        <sc-if value="{{ isAdminSet }}" hint-placeholder-val="{{ false }}">
+          <div class="section-head rule-b" style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:18px;padding-bottom:14px">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:11px;letter-spacing:.08em;text-transform:uppercase">
+                <a href="#" onClick="{{ goAdminRanges }}" style="color:var(--color-accent);text-decoration:none">← Ranges &amp; sets</a>
+                <span style="color:color-mix(in srgb,var(--color-text) 28%,transparent)">/</span>
+                <span style="color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ adminSet.rangeName }}</span>
+              </div>
+              <h2 style="margin:0 0 5px">{{ adminSet.code }} {{ adminSet.name }}</h2>
+              <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ adminSet.count }}</div>
+            </div>
+            <div style="display:flex;gap:9px">
+              <button class="btn btn-secondary" onClick="{{ editCurrentSet }}" style="justify-content:flex-start;gap:5px"><span class="msym" style="font-size:16px">edit</span>Edit set</button>
+              <button class="btn btn-primary" onClick="{{ newMini }}" style="justify-content:flex-start;gap:5px"><span class="msym" style="font-size:16px">add</span>Add miniature</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ adminSetHasRows }}" hint-placeholder-val="{{ true }}">
+          <div class="tbl-scroll">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:28px"></th>
+                <th style="width:46px"></th>
+                <th style="width:110px">Code</th>
+                <th>Name</th>
+                <th style="width:60px"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ adminRows }}" as="m" hint-placeholder-count="8">
+                <tr class="row-hit" onClick="{{ m.edit }}" style="{{ m.rowStyle }}" draggable="true" onDragStart="{{ m.onDragStart }}" onDragEnd="{{ onDragEnd }}" onDragOver="{{ m.onDragOver }}" onDrop="{{ m.onDrop }}">
+                  <td style="cursor:grab;color:color-mix(in srgb,var(--color-text) 35%,transparent)">⠿</td>
+                  <td><div class="plate" style="width:30px;height:38px"><div style="{{ m.photoStyle }}"></div></div></td>
+                  <td style="font-family:var(--font-heading);letter-spacing:.08em">{{ m.code }}</td>
+                  <td style="font-weight:500">{{ m.name }}</td>
+                  <td>
+                    <div style="display:flex;gap:4px;justify-content:flex-end">
+                      <button class="icon-btn danger" onClick="{{ m.remove }}" title="Delete"><span class="msym">delete</span></button>
+                    </div>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          </div>
+          </sc-if>
+          <sc-if value="{{ adminSetEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:34px 0;border-top:2px solid var(--color-divider);border-bottom:2px solid var(--color-divider)">
+              <div style="font-family:var(--font-heading);font-size:17px;margin-bottom:4px">No miniatures in this set yet</div>
+              <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">Add the first casting and it appears in the public catalogue straight away.</div>
+            </div>
+          </sc-if>
+        </sc-if>
+      </main>
+    </div>
+
+    <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:60;display:flex;justify-content:flex-end;background:color-mix(in srgb,var(--color-neutral-900) 42%,transparent)">
+        <div onClick="{{ closeDrawer }}" style="flex:1"></div>
+        <div class="drawer-panel" style="width:480px;max-width:92vw;height:100%;overflow:auto;background:var(--color-bg);border-left:2px solid var(--color-divider);box-shadow:var(--shadow-lg);padding:22px 24px 40px">
+          <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:20px">
+            <div>
+              <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:5px">{{ editing.kicker }}</div>
+              <h3 style="margin:0">{{ editing.name }}</h3>
+            </div>
+            <button class="btn btn-ghost" onClick="{{ closeDrawer }}" style="margin-left:auto;font-size:18px;line-height:1">×</button>
+          </div>
+
+          <div style="margin-bottom:20px">
+            <div class="plate" onClick="{{ drop.pick }}" onDragOver="{{ drop.onDragOver }}" onDragLeave="{{ drop.onDragLeave }}" onDrop="{{ drop.onDrop }}" style="{{ drop.zoneStyle }}">
+              <div style="{{ drop.previewStyle }}"></div>
+              <sc-if value="{{ drop.isEmpty }}" hint-placeholder-val="{{ true }}">
+                <div style="text-align:center;color:color-mix(in srgb,var(--color-bg) 62%,transparent);pointer-events:none">
+                  <span class="msym" style="font-size:26px">add_photo_alternate</span>
+                  <div style="font-size:12px;margin-top:4px">{{ drop.hint }}</div>
+                </div>
+              </sc-if>
+              <input type="file" accept="image/*" ref="{{ drop.ref }}" onChange="{{ drop.onFile }}" style="display:none">
+            </div>
+            <sc-if value="{{ drop.hasPhoto }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+                <span style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ drop.fileName }}</span>
+                <div style="display:flex;gap:4px;margin-left:auto">
+                  <button class="icon-btn" onClick="{{ drop.pick }}" title="Replace"><span class="msym">swap_horiz</span></button>
+                  <button class="icon-btn danger" onClick="{{ drop.clear }}" title="Remove photograph"><span class="msym">delete</span></button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:grid;grid-template-columns:118px 1fr;gap:12px">
+              <div class="field"><label>Code</label><input class="input" value="{{ editing.code }}" onChange="{{ noopChange }}"></div>
+              <div class="field"><label>Name</label><input class="input" value="{{ editing.name }}" onChange="{{ noopChange }}"></div>
+            </div>
+            <div style="display:flex;gap:9px;justify-content:flex-end;padding-top:6px">
+              <button class="btn btn-secondary" onClick="{{ closeDrawer }}">Cancel</button>
+              <button class="btn btn-primary" onClick="{{ closeDrawer }}">Save miniature</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </sc-if>
+
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="z-index:75">
+      <div class="dialog">
+        <div class="dialog-title">{{ confirm.title }}</div>
+        <div class="dialog-body">{{ confirm.body }}</div>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" onClick="{{ closeConfirm }}">Cancel</button>
+          <button class="btn btn-primary" onClick="{{ confirmDelete }}">{{ confirm.action }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ editorOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" style="z-index:70">
+      <div class="dialog">
+        <div class="dialog-title">{{ editor.title }}</div>
+        <sc-if value="{{ editor.hasCode }}" hint-placeholder-val="{{ true }}">
+          <div class="field"><label>Code</label><input class="input" value="{{ editor.code }}" onChange="{{ editor.onCode }}"></div>
+        </sc-if>
+        <div class="field"><label>Name</label><input class="input" value="{{ editor.name }}" onChange="{{ editor.onName }}"></div>
+        <sc-if value="{{ editor.canDelete }}" hint-placeholder-val="{{ false }}">
+          <div style="padding-top:2px">
+            <button class="btn btn-ghost" onClick="{{ editor.remove }}" style="font-size:12px;gap:5px;padding-inline:0"><span class="msym" style="font-size:16px">delete</span>Delete</button>
+          </div>
+        </sc-if>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" onClick="{{ closeEditor }}">Cancel</button>
+          <button class="btn btn-primary" onClick="{{ saveEditor }}">{{ editor.saveLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isAuth }}" hint-placeholder-val="{{ false }}">
+    <main class="auth-shell" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);min-height:calc(100vh - 53px)">
+      <div class="auth-form" style="padding:64px 56px;display:flex;flex-direction:column;justify-content:center;max-width:560px">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:10px">{{ auth.kicker }}</div>
+        <h1 style="font-size:46px;line-height:1.02;margin:0 0 10px">{{ auth.heading }}</h1>
+        <p style="margin:0 0 26px;max-width:42ch;font-size:14px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 62%,transparent);text-wrap:pretty">{{ auth.blurb }}</p>
+
+        <div style="display:flex;margin-bottom:26px;border:1px solid var(--color-divider);width:max-content">
+          <sc-for list="{{ authTabs }}" as="t" hint-placeholder-count="2">
+            <button onClick="{{ t.onClick }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px;max-width:400px">
+          <sc-if value="{{ auth.isSignUp }}" hint-placeholder-val="{{ false }}">
+            <div class="field"><label>Collector name</label><input class="input" placeholder="How you appear on the archive"></div>
+          </sc-if>
+          <div class="field"><label>Email</label><input class="input" type="email" placeholder="you@example.com"></div>
+          <div class="field">
+            <label>Password</label>
+            <input class="input" type="password" placeholder="••••••••">
+            <sc-if value="{{ auth.isSignUp }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:11.5px;color:color-mix(in srgb,var(--color-text) 50%,transparent);margin-top:5px">Eight characters or more.</div>
+            </sc-if>
+          </div>
+          <sc-if value="{{ auth.isSignIn }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                <input type="checkbox" style="width:15px;height:15px;accent-color:var(--color-accent)">
+                Keep me signed in
+              </label>
+              <a href="#" onClick="{{ noop }}" style="font-size:13px;color:var(--color-accent)">Forgotten password</a>
+            </div>
+          </sc-if>
+          <button class="btn btn-primary btn-block" onClick="{{ signIn }}" style="justify-content:flex-start;margin-top:4px">{{ auth.action }}</button>
+          <div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 60%,transparent)">
+            {{ auth.switchText }} <a href="#" onClick="{{ auth.switch }}" style="color:var(--color-accent)">{{ auth.switchLink }}</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-aside" style="border-left:2px solid var(--color-divider);padding:64px 56px;display:flex;flex-direction:column;justify-content:center;background:var(--color-surface)">
+        <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent);margin-bottom:20px">What an account gives you</div>
+        <sc-for list="{{ authPoints }}" as="p" hint-placeholder-count="3">
+          <div style="padding:18px 0;border-top:2px solid var(--color-divider)">
+            <div style="font-family:var(--font-heading);font-size:18px;margin-bottom:4px">{{ p.title }}</div>
+            <div style="font-size:13.5px;line-height:1.5;color:color-mix(in srgb,var(--color-text) 60%,transparent);max-width:40ch;text-wrap:pretty">{{ p.body }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </main>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;gridDensity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Contact sheet&quot;,&quot;Compact&quot;,&quot;Comfortable&quot;],&quot;default&quot;:&quot;Compact&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Browse grid&quot;},&quot;cardCaption&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Code + name&quot;,&quot;Name only&quot;,&quot;Code only&quot;,&quot;None&quot;],&quot;default&quot;:&quot;Code + name&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Browse grid&quot;},&quot;ownedMark&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Checkbox&quot;,&quot;Stamped plate&quot;,&quot;Corner fold&quot;],&quot;default&quot;:&quot;Checkbox&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Owned marking&quot;},&quot;startSignedIn&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;State&quot;}}">
+class Component extends DCLogic {
+  state = {
+    screen: 'browse', expanded: { CIT: true, RR: true }, setFilter: null,
+    query: '', ownedOnly: false, missingOnly: false, density: null,
+    owned: {}, photoOverrides: {}, dropActive: false, adminSetId: null, editor: null, confirm: null, drawerId: null, drag: null, dragOver: null, signedIn: null, authMode: 'in', page: 1
+  };
+
+  ranges = [
+    { code: 'CIT', name: 'Citadel C-Series', total: 1840 },
+    { code: 'RR', name: 'Regiments of Renown', total: 612 },
+    { code: 'RT', name: '40,000 — Rogue Trader', total: 1436 },
+    { code: 'MM', name: 'Marauder Miniatures', total: 704 },
+    { code: 'BB', name: 'Blood Bowl', total: 726 }
+  ];
+
+  sets = [
+    ['CIT', 'C01', 'Fighters', 1985, 'Fighters, knights and men-at-arms of the standard adventuring line.'],
+    ['CIT', 'C06', 'Dwarfs', 1986, 'The long-running dwarf line, largely by Kev Adams and the Perrys.'],
+    ['CIT', 'C11', 'Orcs', 1986, 'Grinning orcs — the range that fixed the house style for a decade.'],
+    ['CIT', 'C12', 'Goblins', 1987, 'Netters, archers and bosses on foot.'],
+    ['RR', 'RR3', "Bugman's Dwarf Rangers", 1985, 'Josef Bugman and his brewery guard, twelve figures to the boxed regiment.'],
+    ['RR', 'RR4', "Ruglud's Armoured Orcs", 1986, 'Crossbow orcs in scavenged plate.'],
+    ['RR', 'RR8', "Grom's Goblin Guard", 1987, 'Grom the Paunch and his standard-bearing retinue.'],
+    ['RT', 'RT01', 'Space Marines', 1987, 'Beakies — the first Rogue Trader power-armoured line.'],
+    ['RT', 'RT101', 'Space Orks', 1988, 'Kev Adams at full tilt; the range that never stopped growing.'],
+    ['MM', 'MM10', 'Dwarfs', 1989, 'Marauder dwarfs, sculpted by Aly and Trish Morrison.'],
+    ['MM', 'MM30', 'Chaos Warriors', 1990, 'Heavy chaos armour with interchangeable heads.'],
+    ['BB', 'BB2', 'Human Team', 1989, 'Second-edition Blood Bowl linemen, throwers and catchers.']
+  ];
+
+  figures = {
+    C01: ['Sword & Shield Fighter', 'Two-Handed Swordsman', 'Fighter with Axe', 'Fighter in Plate', 'Man-at-Arms, Advancing', 'Champion with Warhammer', 'Spearman, Braced', 'Fighter with Halberd'],
+    C06: ['Dwarf with Axe', 'Dwarf Crossbowman', 'Dwarf Lord', 'Dwarf Slayer', 'Dwarf Standard Bearer', 'Dwarf Musician', 'Dwarf with Two-Handed Axe'],
+    C11: ['Orc with Scimitar', 'Orc Archer', 'Orc Boss', 'Orc Standard Bearer', 'Orc with Spear', 'Orc Musician', 'Orc with Club', 'Orc Champion'],
+    C12: ['Goblin with Spear', 'Goblin Archer', 'Goblin Netter', 'Goblin Boss', 'Goblin with Sword', 'Goblin Standard'],
+    RR3: ['Josef Bugman', 'Ranger with Crossbow', 'Ranger with Axe', 'Ranger Standard Bearer', 'Ranger Musician', 'Ranger with Handgun'],
+    RR4: ['Ruglud Bonechewer', 'Armoured Orc, Crossbow', 'Armoured Orc, Loading', 'Armoured Orc Standard', 'Armoured Orc Musician'],
+    RR8: ['Grom the Paunch', 'Goblin Guard, Spear', 'Goblin Guard, Bow', 'Goblin Guard Standard', 'Niblit the Standard Runner'],
+    RT01: ['Marine with Bolter', 'Marine Sergeant', 'Marine with Missile Launcher', 'Marine, Kneeling', 'Marine Captain', 'Marine with Flamer'],
+    RT101: ['Ork Boy with Bolter', 'Ork Nob', 'Ork with Heavy Stubber', 'Ork Runtherd', 'Ork Boy, Charging', 'Ork Kommando', 'Ork Warboss'],
+    MM10: ['Dwarf with Hand Weapon', 'Dwarf Berserker', 'Dwarf Thane', 'Dwarf Crossbow', 'Dwarf Standard'],
+    MM30: ['Chaos Warrior, Sword', 'Chaos Warrior, Axe', 'Chaos Champion', 'Chaos Standard Bearer', 'Chaos Warrior, Halberd'],
+    BB2: ['Human Lineman', 'Human Thrower', 'Human Catcher', 'Human Blitzer', 'Human Coach', 'Human Lineman, Blocking']
+  };
+
+  photos = ['uploads/Scum-1.jpg', 'uploads/Extech.jpg', 'uploads/Hero.jpg', 'uploads/Female_Warrior_Jayne.jpg'];
+
+  componentDidMount() {
+    const owned = {};
+    this.all().forEach((m, i) => { if (i % 3 === 0 || i % 7 === 2) owned[m.code] = 1; });
+    this.setState({ owned });
+  }
+
+  all() {
+    if (this._all) return this._all;
+    const out = [];
+    let n = 0;
+    this.sets.forEach(([rc, sc, sn, yr, blurb]) => {
+      const range = this.ranges.find(r => r.code === rc);
+      (this.figures[sc] || []).forEach((name, i) => {
+        const num = String(i + 1).padStart(2, '0');
+        out.push({
+          code: sc + '-' + num, name, setCode: sc, setName: sn, rangeCode: rc,
+          photo: this.photos[n++ % this.photos.length],
+          rangeName: range.name
+        });
+      });
+    });
+    this._all = out;
+    return out;
+  }
+
+  density() { return this.state.density || this.props.gridDensity || 'Compact'; }
+  markMode() { return this.props.ownedMark || 'Checkbox'; }
+  photoFor(code, fallback) {
+    const o = this.state.photoOverrides[code];
+    return o ? o.url : fallback;
+  }
+
+  photoStyle(owned, photo) {
+    // shot on black: the plate keeps that ground, the photograph prints on it
+    // in pure black and white. Unowned miniatures sit back to a flat grey block.
+    return 'grid-area:1/1;width:100%;height:100%;background-color:var(--color-neutral-900);' +
+      'background-image:url("' + photo + '");background-size:cover;background-position:center;' +
+      'transition:opacity .18s,filter .18s;' +
+      (owned
+        ? 'opacity:1;filter:grayscale(1) contrast(1.08)'
+        : 'opacity:.3;filter:grayscale(1) contrast(.9)');
+  }
+  signed() { return this.state.signedIn === null ? (this.props.startSignedIn !== false) : this.state.signedIn; }
+
+  reorder(list, fromKey, toKey, keyOf) {
+    const from = list.findIndex(x => keyOf(x) === fromKey);
+    const to = list.findIndex(x => keyOf(x) === toKey);
+    if (from < 0 || to < 0 || from === to) return false;
+    const [moved] = list.splice(from, 1);
+    list.splice(to, 0, moved);
+    return true;
+  }
+
+  startDrag = (kind, key) => (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (e && e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', key); } catch (err) {} }
+    this.setState({ drag: { kind, key }, dragOver: null });
+  };
+
+  overDrag = (kind, key) => (e) => {
+    const d = this.state.drag;
+    if (!d || d.kind !== kind) return;
+    e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+    if (this.state.dragOver !== key) this.setState({ dragOver: key });
+  };
+
+  dropDrag = (kind, key) => (e) => {
+    const d = this.state.drag;
+    if (!d || d.kind !== kind) return;
+    e.preventDefault();
+    if (e.stopPropagation) e.stopPropagation();
+    let ok = false;
+    if (kind === 'mini') {
+      const setCode = this.state.adminSetId;
+      const names = this.figures[setCode];
+      const nameOf = (code) => {
+        const hit = this.all().find(m => m.code === code);
+        return hit ? hit.name : null;
+      };
+      ok = this.reorder(names, nameOf(d.key), nameOf(key), n => n);
+    }
+    if (ok) this._all = null;
+    this.setState({ drag: null, dragOver: null });
+  };
+
+  endDrag = () => this.setState({ drag: null, dragOver: null });
+
+  openEditor = (cfg) => (e) => { this.stop(e); this.setState({ editor: cfg }); };
+
+  saveEditor = () => {
+    const ed = this.state.editor;
+    if (!ed) return;
+    const name = (ed.name || '').trim();
+    const code = (ed.code || '').trim();
+    if (ed.kind === 'range') {
+      const r = this.ranges.find(x => x.code === ed.key);
+      if (r && name) r.name = name;
+    } else if (ed.kind === 'set') {
+      const st = this.sets.find(x => x[1] === ed.key);
+      if (st) { if (code) st[1] = code; if (name) st[2] = name; }
+      if (code && code !== ed.key) {
+        this.figures[code] = this.figures[ed.key] || [];
+        delete this.figures[ed.key];
+        if (this.state.adminSetId === ed.key) this.setState({ adminSetId: code });
+      }
+      this._all = null;
+    } else if (ed.kind === 'new-range') {
+      if (name) {
+        let key = name.replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase() || 'RNG';
+        while (this.ranges.some(r => r.code === key)) key += 'X';
+        this.ranges.push({ code: key, name, total: 0 });
+      }
+    } else if (ed.kind === 'new-set') {
+      if (code && name) {
+        this.sets.push([ed.rangeCode, code, name]);
+        this.figures[code] = [];
+        this._all = null;
+      }
+    }
+    this.setState({ editor: null });
+  };
+
+  confirmCopy(all) {
+    const c = this.state.confirm;
+    if (!c) return { title: '', body: '', action: 'Delete' };
+    if (c.kind === 'mini') {
+      const m = all.find(x => x.code === c.key) || {};
+      return {
+        title: 'Delete ' + (m.name || c.key) + '?',
+        body: 'This removes ' + c.key + ' from the set for every collector. It cannot be undone.',
+        action: 'Delete miniature'
+      };
+    }
+    if (c.kind === 'set') {
+      const st = this.sets.find(x => x[1] === c.key) || [];
+      const n = all.filter(m => m.setCode === c.key).length;
+      return {
+        title: 'Delete set ' + c.key + ' ' + (st[2] || '') + '?',
+        body: 'The set and its ' + n + (n === 1 ? ' miniature' : ' miniatures') + ' are removed from the catalogue, along with every collector\'s record of them. It cannot be undone.',
+        action: 'Delete set'
+      };
+    }
+    const r = this.ranges.find(x => x.code === c.key) || {};
+    const sets = this.sets.filter(x => x[0] === c.key);
+    const minis = all.filter(m => m.rangeCode === c.key).length;
+    return {
+      title: 'Delete range ' + (r.name || c.key) + '?',
+      body: 'This removes ' + sets.length + (sets.length === 1 ? ' set' : ' sets') + ' and ' + minis + (minis === 1 ? ' miniature' : ' miniatures') + ' from the catalogue, along with every collector\'s record of them. It cannot be undone.',
+      action: 'Delete range'
+    };
+  }
+
+  runConfirmedDelete = () => {
+    const c = this.state.confirm;
+    if (!c) return;
+    if (c.kind === 'mini') {
+      const target = this.all().find(m => m.code === c.key);
+      if (target) {
+        const names = this.figures[target.setCode] || [];
+        const at = names.indexOf(target.name);
+        if (at > -1) names.splice(at, 1);
+      }
+      this._all = null;
+      this.setState({ confirm: null });
+      return;
+    }
+    if (c.kind === 'set') {
+      this.sets = this.sets.filter(x => x[1] !== c.key);
+      delete this.figures[c.key];
+    } else {
+      this.ranges = this.ranges.filter(r => r.code !== c.key);
+      this.sets.filter(x => x[0] === c.key).forEach(x => { delete this.figures[x[1]]; });
+      this.sets = this.sets.filter(x => x[0] !== c.key);
+    }
+    this._all = null;
+    this.setState({ confirm: null, adminSetId: null });
+  };
+
+  fileRef = (el) => { this._fileInput = el; };
+
+  readPhotoFile = (file) => {
+    if (!file || !/^image\//.test(file.type)) return;
+    const key = this.state.drawerId;
+    if (!key) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.setState(st => ({
+        photoOverrides: Object.assign({}, st.photoOverrides, { [key]: { url: reader.result, name: file.name } }),
+        dropActive: false
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  go = (screen, extra) => (e) => { if (e && e.preventDefault) e.preventDefault(); window.scrollTo(0, 0); this.setState(Object.assign({ screen }, extra || {})); };
+  stop(e) { if (e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); } }
+
+  toggleOwned = (code) => (e) => {
+    this.stop(e);
+    if (!this.signed()) { window.scrollTo(0, 0); this.setState({ screen: 'auth', authMode: 'in' }); return; }
+    this.setState(s => {
+      const owned = Object.assign({}, s.owned);
+      if (owned[code]) delete owned[code]; else owned[code] = 1;
+      return { owned };
+    });
+  };
+
+  claimSet = (setCode) => (e) => {
+    this.stop(e);
+    if (!this.signed()) { window.scrollTo(0, 0); this.setState({ screen: 'auth', authMode: 'in' }); return; }
+    const codes = this.all().filter(m => m.setCode === setCode).map(m => m.code);
+    this.setState(s => {
+      const owned = Object.assign({}, s.owned);
+      const allOwned = codes.every(c => owned[c]);
+      codes.forEach(c => { if (allOwned) delete owned[c]; else owned[c] = 1; });
+      return { owned };
+    });
+  };
+
+  pill(active) {
+    return 'display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:var(--font-heading);font-size:13px;letter-spacing:.04em;padding:7px 12px;border:1px solid ' +
+      (active ? 'var(--color-accent);background:var(--color-accent);color:var(--color-bg)' : 'var(--color-divider);background:transparent;color:var(--color-text)');
+  }
+
+  renderVals() {
+    const s = this.state, all = this.all(), signed = this.signed();
+    const density = this.density(), mode = this.markMode();
+    const caption = this.props.cardCaption || 'Code + name';
+    const q = s.query.trim().toLowerCase();
+    const nf = (n) => n.toLocaleString('en-GB');
+
+    let pool = all;
+    if (s.setFilter) pool = pool.filter(m => m.setCode === s.setFilter);
+    if (q) pool = pool.filter(m => (m.name + ' ' + m.code).toLowerCase().includes(q));
+    if (s.ownedOnly) pool = pool.filter(m => s.owned[m.code]);
+    if (s.missingOnly) pool = pool.filter(m => !s.owned[m.code]);
+
+    const decorate = (m) => {
+      const on = !!s.owned[m.code];
+      const stamp = mode === 'Stamped plate' && on;
+      const fold = mode === 'Corner fold';
+      return Object.assign({}, m, {
+        owned: on,
+        hasPhoto: !!m.photo,
+        photoStyle: this.photoStyle(on, this.photoFor(m.code, m.photo)),
+        nameStyle: 'display:block;font-family:var(--font-heading);font-weight:var(--font-heading-weight);font-size:11.5px;line-height:1.2;text-decoration:none;color:' +
+          (on ? 'var(--color-text)' : 'color-mix(in srgb,var(--color-text) 52%,transparent)'),
+        codeStyle: 'font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;color:' + (on ? 'var(--color-accent-700)' : 'color-mix(in srgb,var(--color-text) 40%,transparent)'),
+        toggle: this.toggleOwned(m.code),
+        stampStyle: stamp
+          ? 'position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-heading);font-size:15px;letter-spacing:.14em;color:var(--color-accent);border:3px solid var(--color-accent);transform:rotate(-12deg);z-index:3'
+          : 'display:none',
+        foldStyle: (fold && on)
+          ? 'position:absolute;top:0;right:0;width:0;height:0;border-top:30px solid var(--color-accent);border-left:30px solid transparent'
+          : 'display:none',
+        cardStyle: 'position:relative;padding:var(--space-2);gap:var(--space-2);' +
+          (on ? 'background:var(--color-surface)' : 'background:color-mix(in srgb,var(--color-surface) 55%,var(--color-bg))'),
+        boxStyleFloat: 'position:absolute;top:var(--space-2);right:var(--space-2);width:34px;height:34px;padding:0;' +
+          'display:grid;place-items:center;cursor:pointer;z-index:3;border:2px solid ' +
+          (on ? 'var(--color-accent);background:var(--color-accent);color:var(--color-bg)'
+              : 'color-mix(in srgb,var(--color-bg) 60%,transparent);background:color-mix(in srgb,var(--color-neutral-900) 45%,transparent);color:transparent'),
+        tickStyle: on ? 'opacity:1' : 'opacity:0'
+      });
+    };
+
+    const isIndex = s.screen === 'browse' && !s.setFilter;
+    const isSetPage = s.screen === 'browse' && !!s.setFilter;
+    const shown = isIndex ? [] : pool;
+    const bySet = {};
+    shown.forEach(m => { (bySet[m.setCode] = bySet[m.setCode] || []).push(m); });
+    const setGroups = Object.keys(bySet).map(code => {
+      const meta = this.sets.find(x => x[1] === code);
+      const inSet = all.filter(m => m.setCode === code);
+      const own = inSet.filter(m => s.owned[m.code]).length;
+      return {
+        code, name: meta[2], meta: (n => n + (n === 1 ? ' miniature' : ' miniatures'))(inSet.length),
+        ownedLabel: own + ' / ' + inSet.length + ' owned',
+        claimAll: this.claimSet(code),
+        showHeader: !isSetPage,
+        minis: bySet[code].map(decorate)
+      };
+    });
+
+    const rangeSections = this.ranges.slice().sort((a, b) => a.name.localeCompare(b.name, 'en')).map(r => {
+      const setsIn = this.sets.filter(x => x[0] === r.code && (!q || (x[1] + ' ' + x[2]).toLowerCase().includes(q)))
+        .slice().sort((a, b) => a[1].localeCompare(b[1], 'en', { numeric: true }));
+      const inR = all.filter(m => m.rangeCode === r.code);
+      const ownR = inR.filter(m => s.owned[m.code]).length;
+      return {
+        code: r.code, name: r.name,
+        meta: (n => n + (n === 1 ? ' set' : ' sets'))(setsIn.length) + ' · ' + nf(r.total) + ' miniatures',
+        rangeCode: r.code,
+        ownedLabel: ownR + ' / ' + inR.length + ' owned',
+        sets: setsIn.map(([, code, name]) => {
+          const inSet = all.filter(m => m.setCode === code);
+          const own = inSet.filter(m => s.owned[m.code]).length;
+          const pct = Math.round((own / Math.max(inSet.length, 1)) * 100);
+          return {
+            code, name,
+            countLabel: (n => n + (n === 1 ? ' miniature' : ' miniatures'))(inSet.length),
+            ownedLabel: own + ' owned',
+            barStyle: 'height:100%;background:var(--color-accent);width:' + pct + '%',
+            completeStyle: own === inSet.length
+              ? 'flex:none;width:18px;height:18px;display:grid;place-items:center;font-size:11px;background:var(--color-accent);color:var(--color-bg)'
+              : 'display:none',
+            open: () => { window.scrollTo(0, 0); this.setState({ screen: 'browse', setFilter: code, page: 1 }); }
+          };
+        })
+      };
+    });
+
+    const rangeSectionsShown = rangeSections.filter(r => r.sets.length > 0);
+    const curSet = s.setFilter ? all.filter(m => m.setCode === s.setFilter) : [];
+    const curOwn = curSet.filter(m => s.owned[m.code]).length;
+
+    const tree = this.ranges.slice().sort((a, b) => a.name.localeCompare(b.name, 'en')).map(r => ({
+      name: r.name, count: nf(r.total),
+      expanded: !!s.expanded[r.code],
+      caretStyle: 'display:inline-block;transition:transform .12s;transform:rotate(' + (s.expanded[r.code] ? 90 : 0) + 'deg);color:color-mix(in srgb,var(--color-text) 45%,transparent)',
+      toggle: () => this.setState(st => ({ expanded: Object.assign({}, st.expanded, { [r.code]: !st.expanded[r.code] }) })),
+      sets: this.sets.filter(x => x[0] === r.code).slice().sort((a, b) => a[1].localeCompare(b[1], 'en', { numeric: true })).map(([, code, name]) => {
+        const inSet = all.filter(m => m.setCode === code);
+        const own = inSet.filter(m => s.owned[m.code]).length;
+        const active = s.setFilter === code;
+        return {
+          code, name, ownedLabel: own + '/' + inSet.length,
+          select: () => this.setState({ setFilter: active ? null : code, page: 1, screen: 'browse' }),
+          style: 'width:100%;display:flex;align-items:center;gap:9px;padding:6px 20px 6px 43px;border:0;cursor:pointer;text-align:left;font-size:13px;' +
+            (active ? 'background:var(--color-accent-100);color:var(--color-accent-800);box-shadow:inset 2px 0 0 var(--color-accent)' : 'background:transparent;color:var(--color-text)')
+        };
+      })
+    }));
+
+
+    const adminSetCode = s.adminSetId;
+    const adminSetMeta = this.sets.find(x => x[1] === adminSetCode);
+    const adminRows = (adminSetCode ? all.filter(m => m.setCode === adminSetCode) : []).map(m => ({
+      code: m.code, name: m.name,
+      photoStyle: this.photoStyle(true, this.photoFor(m.code, m.photo)),
+      rowStyle: 'cursor:pointer;' + (s.drag && s.drag.kind === 'mini' && s.dragOver === m.code && s.drag.key !== m.code
+        ? 'box-shadow:inset 0 2px 0 var(--color-accent)' : ''),
+      onDragStart: this.startDrag('mini', m.code),
+      onDragOver: this.overDrag('mini', m.code),
+      onDrop: this.dropDrag('mini', m.code),
+      edit: (e) => { this.stop(e); this.setState({ drawerId: m.code }); },
+      remove: (e) => { this.stop(e); this.setState({ confirm: { kind: 'mini', key: m.code } }); }
+    }));
+
+    const adminRanges = this.ranges.slice().sort((a, b) => a.name.localeCompare(b.name, 'en')).map(r => ({
+      name: r.name,
+      meta: (n => n + (n === 1 ? ' set' : ' sets'))(this.sets.filter(x => x[0] === r.code).length),
+      addSet: this.openEditor({ kind: 'new-set', rangeCode: r.code, code: '', name: '', title: 'New set in ' + r.name }),
+      isEmpty: this.sets.filter(x => x[0] === r.code).length === 0,
+      hasSets: this.sets.filter(x => x[0] === r.code).length > 0,
+      editRange: this.openEditor({ kind: 'range', key: r.code, name: r.name, title: 'Edit range' }),
+      sets: this.sets.filter(x => x[0] === r.code).slice().sort((a, b) => a[1].localeCompare(b[1], 'en', { numeric: true })).map(([, code, name]) => ({
+        code, name,
+        count: (n => n + (n === 1 ? ' miniature' : ' miniatures'))(all.filter(m => m.setCode === code).length),
+        open: (e) => { this.stop(e); window.scrollTo(0, 0); this.setState({ adminSetId: code }); }
+      }))
+    }));
+
+    const adminSet = adminSetMeta ? {
+      code: adminSetMeta[1], name: adminSetMeta[2],
+      rangeName: (this.ranges.find(r => r.code === adminSetMeta[0]) || {}).name,
+      count: (n => n + (n === 1 ? ' miniature' : ' miniatures'))(all.filter(m => m.setCode === adminSetCode).length)
+    } : { code: '', name: '', rangeName: '', count: '' };
+
+    const eb = all.find(m => m.code === s.drawerId) || all[0];
+
+    const cols = density === 'Contact sheet' ? '94px' : (density === 'Comfortable' ? '178px' : '128px');
+    const gap = density === 'Contact sheet' ? '12px' : (density === 'Comfortable' ? '24px' : '18px');
+    const ownedTotal = Object.keys(s.owned).length;
+
+    return {
+      isPublic: s.screen !== 'admin',
+      isAuth: s.screen === 'auth',
+      isBrowseLike: s.screen === 'browse',
+      isBrowse: s.screen === 'browse',
+      isIndex, isSetPage,
+      isIndexOrSet: s.screen === 'browse',
+      shellStyle: isSetPage ? 'display:grid;grid-template-columns:266px minmax(0,1fr)' : 'display:block',
+      mainStyle: isSetPage
+        ? 'padding:26px 30px 90px;min-width:0'
+        : 'max-width:1320px;margin:0 auto;padding:26px 30px 90px;min-width:0',
+      rangeSections: rangeSectionsShown,
+      goIndex: (e) => { if (e && e.preventDefault) e.preventDefault(); window.scrollTo(0, 0); this.setState({ setFilter: null, page: 1 }); },
+      claimCurrentSet: this.claimSet(s.setFilter),
+      currentSetOwnedLabel: curOwn + ' of ' + curSet.length + ' owned',
+      resultLabelStyle: 'font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent);margin-left:auto',
+      isAdmin: s.screen === 'admin',
+      isAdminRanges: s.screen === 'admin' && !s.adminSetId,
+      isAdminSet: s.screen === 'admin' && !!s.adminSetId,
+      goAdminRanges: (e) => { if (e && e.preventDefault) e.preventDefault(); window.scrollTo(0, 0); this.setState({ adminSetId: null }); },
+      isEmpty: !isIndex && shown.length === 0,
+      signedIn: signed, signedOut: !signed,
+      showSignInButton: !signed && s.screen !== 'auth',
+      showHeader: true,
+      headerNavLabel: s.screen === 'admin' ? 'Public site' : 'Admin',
+      headerNavIconStyle: s.screen === 'admin' ? 'font-size:16px' : 'display:none',
+      headerNav: s.screen === 'admin' ? this.go('browse', { setFilter: null }) : this.go('admin', { adminSetId: null }),
+      openLogin: (e) => { this.stop(e); window.scrollTo(0, 0); this.setState({ screen: 'auth', authMode: 'in' }); },
+      signIn: (e) => { this.stop(e); window.scrollTo(0, 0); this.setState({ signedIn: true, screen: 'browse' }); },
+      authTabs: [['in', 'Sign in'], ['up', 'Create account']].map(([mode, label], i) => ({
+        label,
+        onClick: () => this.setState({ authMode: mode }),
+        style: 'cursor:pointer;border:0;font-family:var(--font-heading);font-weight:var(--font-heading-weight);font-size:13px;' +
+          'height:34px;padding:0 16px;display:inline-flex;align-items:center;' + (i > 0 ? 'border-left:1px solid var(--color-divider);' : '') +
+          ((s.authMode || 'in') === mode ? 'background:var(--color-accent);color:var(--color-bg)' : 'background:transparent;color:var(--color-text)')
+      })),
+      auth: (mode => ({
+        isSignIn: mode === 'in',
+        isSignUp: mode === 'up',
+        kicker: mode === 'in' ? 'Account' : 'Join the archive',
+        heading: mode === 'in' ? 'Sign in' : 'Create an account',
+        blurb: mode === 'in'
+          ? 'Your ticks are private to your account and follow you across every range in the archive.'
+          : 'One account, one running record of the lead already on your shelf. Free, and no one else sees it.',
+        action: mode === 'in' ? 'Sign in' : 'Create account',
+        switchText: mode === 'in' ? 'No account yet?' : 'Already have one?',
+        switchLink: mode === 'in' ? 'Create one' : 'Sign in',
+        switch: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ authMode: mode === 'in' ? 'up' : 'in' }); }
+      }))(s.authMode || 'in'),
+      authPoints: [
+        { title: 'Tick what you own', body: 'One tap on any miniature. Owned castings print at full strength, the rest sit back — the grid becomes a map of the gaps.' },
+        { title: 'Progress per set', body: 'Every set and range carries its own count, so you can see at a glance which regiments are two figures short.' },
+        { title: 'Private by default', body: 'Your record is yours. The archive shows aggregate numbers only, never who owns what.' }
+      ],
+      signOut: (e) => { this.stop(e); this.setState({ signedIn: false }); },
+      goBrowse: this.go('browse', { setFilter: null, page: 1 }),
+      goAdmin: this.go('admin', { adminSetId: null }),
+      navBrowse: 'text-decoration:none;color:' + (s.screen === 'browse' ? 'var(--color-accent)' : 'inherit'),
+      noop: (e) => e.preventDefault(),
+      noopChange: () => {},
+      query: s.query,
+      onQuery: (e) => this.setState({ query: e.target.value, page: 1 }),
+      tree, setGroups, adminRows, adminRanges, adminSet, onDragEnd: this.endDrag,
+      adminSetEmpty: !!adminSetCode && adminRows.length === 0,
+      adminSetHasRows: adminRows.length > 0,
+      pageHeadStyle: 'display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:20px;' +
+        (isSetPage ? 'padding-bottom:14px;border-bottom:2px solid var(--color-divider)' : ''),
+      emptyTitle: (s.ownedOnly || s.missingOnly) ? 'Nothing matches this filter' : 'No miniatures in this set yet',
+      emptyBody: (s.ownedOnly || s.missingOnly)
+        ? 'Switch back to All to see the whole set.'
+        : 'This set is catalogued but its miniatures have not been added.',
+      confirmOpen: !!s.confirm,
+      confirm: this.confirmCopy(all),
+      closeConfirm: () => this.setState({ confirm: null }),
+      confirmDelete: this.runConfirmedDelete,
+      editorOpen: !!s.editor,
+      newRange: this.openEditor({ kind: 'new-range', code: '', name: '', title: 'New range' }),
+      closeEditor: () => this.setState({ editor: null }),
+      saveEditor: this.saveEditor,
+      editCurrentSet: adminSetMeta
+        ? this.openEditor({ kind: 'set', key: adminSetMeta[1], code: adminSetMeta[1], name: adminSetMeta[2], title: 'Edit set' })
+        : (e) => this.stop(e),
+      editor: {
+        title: (s.editor && s.editor.title) || '',
+        code: (s.editor && s.editor.code) || '',
+        name: (s.editor && s.editor.name) || '',
+        hasCode: !!s.editor && s.editor.kind !== 'range' && s.editor.kind !== 'new-range',
+        canDelete: !!s.editor && (s.editor.kind === 'range' || s.editor.kind === 'set'),
+        saveLabel: s.editor && s.editor.kind === 'new-set' ? 'Create set'
+          : (s.editor && s.editor.kind === 'new-range' ? 'Create range' : 'Save'),
+        remove: () => {
+          const ed = this.state.editor;
+          if (ed) this.setState({ confirm: { kind: ed.kind, key: ed.key }, editor: null });
+        },
+        onCode: (e) => { const v = e.target.value; this.setState(st => ({ editor: Object.assign({}, st.editor, { code: v }) })); },
+        onName: (e) => { const v = e.target.value; this.setState(st => ({ editor: Object.assign({}, st.editor, { name: v }) })); }
+      },
+      showCaption: density !== 'Contact sheet' && caption !== 'None',
+      noInfo: density !== 'Contact sheet' && caption === 'None',
+      showCode: caption === 'Code + name' || caption === 'Code only',
+      showName: caption === 'Code + name' || caption === 'Name only',
+      gridStyle: 'display:grid;grid-template-columns:repeat(auto-fill,minmax(' + cols + ',1fr));gap:' + gap,
+      crumb: s.setFilter
+        ? (rn => (rn ? rn + ' · ' : '') + s.setFilter)(
+            (this.ranges.find(r => r.code === ((this.sets.find(x => x[1] === s.setFilter) || [])[0])) || {}).name || ''
+          )
+        : 'The whole archive',
+      heading: s.setFilter ? (this.sets.find(x => x[1] === s.setFilter) || [])[2] : 'Every set, 1984—1992',
+      blurb: s.setFilter
+        ? ''
+        : 'Every boxed set and blister line, grouped by range. Open a set to see its miniatures. Scanned from the original catalogues and cross-checked against the boxed sets. Sign in and tick what is already in the drawer — the archive remembers, so you stop buying the same goblin twice.',
+      totalLabel: '5,318', setTotalLabel: '412',
+      ownedCount: nf(ownedTotal),
+      ownedTotalLabel: ownedTotal + ' ticked',
+      resultLabel: isIndex
+        ? (n => n + (n === 1 ? ' set' : ' sets'))(rangeSectionsShown.reduce((n2, r) => n2 + r.sets.length, 0)) + ' in ' + (n => n + (n === 1 ? ' range' : ' ranges'))(rangeSectionsShown.length)
+        : 'Showing ' + shown.length + ' of ' + pool.length,
+      clearSet: () => this.setState({ setFilter: null, page: 1 }),
+      allRangesStyle: this.pill(!s.setFilter) + ';width:100%;justify-content:flex-start',
+      ownFilterOpts: [
+        { label: 'All', owned: false, missing: false },
+        { label: 'Owned', owned: true, missing: false },
+        { label: 'Missing', owned: false, missing: true }
+      ].map((o, i) => ({
+        label: o.label,
+        onClick: () => this.setState({ ownedOnly: o.owned, missingOnly: o.missing, page: 1 }),
+        style: 'cursor:pointer;border:0;font-family:var(--font-heading);font-weight:var(--font-heading-weight);' +
+          'font-size:13px;height:32px;padding:0 14px;display:inline-flex;align-items:center;' +
+          (i > 0 ? 'border-left:1px solid var(--color-divider);' : '') +
+          (s.ownedOnly === o.owned && s.missingOnly === o.missing
+            ? 'background:var(--color-accent);color:var(--color-bg)'
+            : 'background:transparent;color:var(--color-text)')
+      })),
+      densityOpts: ['Contact sheet', 'Compact', 'Comfortable'].map((d, i) => ({
+        label: d, glyph: ['▦', '▤', '▢'][i],
+        onClick: () => this.setState({ density: d }),
+        style: 'width:32px;height:32px;cursor:pointer;border:0;font-size:13px;display:inline-flex;align-items:center;justify-content:center;' +
+          (i > 0 ? 'border-left:1px solid var(--color-divider);' : '') +
+          (density === d ? 'background:var(--color-accent);color:var(--color-bg)' : 'background:transparent;color:var(--color-text)')
+      })),
+      adminNav: [
+        { label: 'Ranges & sets', active: true }
+      ].map(n => ({
+        label: n.label, onClick: (e) => e.preventDefault(),
+        style: 'display:block;padding:8px 18px;font-family:var(--font-heading);font-size:14px;text-decoration:none;' +
+          (n.active ? 'background:var(--color-accent-100);color:var(--color-accent-800);box-shadow:inset 2px 0 0 var(--color-accent)' : 'color:var(--color-text)')
+      })),
+      newMini: (e) => { this.stop(e); this.setState({ drawerId: 'NEW' }); },
+      drawerOpen: !!s.drawerId,
+      drop: (() => {
+        const key = s.drawerId;
+        const over = s.photoOverrides[key];
+        const base = key === 'NEW' ? null : (all.find(m => m.code === key) || {}).photo;
+        const url = over ? over.url : base;
+        return {
+          isEmpty: !url,
+          hasPhoto: !!over,
+          hint: 'Drop a photograph, or click to choose',
+          fileName: over ? over.name : '',
+          ref: this.fileRef,
+          zoneStyle: 'aspect-ratio:4/3;display:grid;place-items:center;cursor:pointer;position:relative;' +
+            (s.dropActive ? 'outline:2px solid var(--color-accent);outline-offset:-2px' : ''),
+          previewStyle: url
+            ? 'position:absolute;inset:0;background-image:url("' + url + '");background-size:cover;background-position:center;filter:grayscale(1) contrast(1.08)'
+            : 'display:none',
+          pick: (e) => { this.stop(e); if (this._fileInput) this._fileInput.click(); },
+          onFile: (e) => { this.readPhotoFile(e.target.files && e.target.files[0]); },
+          onDragOver: (e) => { e.preventDefault(); if (!s.dropActive) this.setState({ dropActive: true }); },
+          onDragLeave: () => this.setState({ dropActive: false }),
+          onDrop: (e) => {
+            e.preventDefault();
+            this.setState({ dropActive: false });
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length) this.readPhotoFile(dt.files[0]);
+          },
+          clear: (e) => {
+            this.stop(e);
+            this.setState(st => {
+              const po = Object.assign({}, st.photoOverrides);
+              delete po[key];
+              return { photoOverrides: po };
+            });
+          }
+        };
+      })(),
+      closeDrawer: () => this.setState({ drawerId: null }),
+      editing: s.drawerId === 'NEW'
+        ? { kicker: 'New miniature', code: '', name: '' }
+        : { kicker: 'Edit miniature', code: eb.code, name: eb.name },
+      setOptions: []
+    };
+  }
+}
+
+</script>
+</body>
+</html>
