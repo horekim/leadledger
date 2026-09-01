@@ -23,7 +23,7 @@
       </div>
       <div class="stat-own">
         <div class="stat-num"><?= e(num($totals['owned'])) ?></div>
-        <div class="stat-lbl">You own</div>
+        <div class="stat-lbl">Owned</div>
       </div>
     </div>
   </div>
