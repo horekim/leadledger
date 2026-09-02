@@ -11,7 +11,11 @@ $message = flash();
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($title !== '' ? $title . ' — ' . config('site_name') : config('site_name')) ?></title>
 <link rel="stylesheet" href="<?= e(asset('assets/ds/styles.css')) ?>">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0">
+<?php /* display=block: the icon glyphs are ligatures, so without it the raw
+        ligature text ("chevron_right", "delete") paints as words until the font
+        arrives. Blocking hides them instead, then swaps the glyphs in. */ ?>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0&display=block">
 <link rel="stylesheet" href="<?= e(asset('assets/app.css')) ?>">
 <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
 <meta name="base-url" content="<?= e(url('')) ?>">
