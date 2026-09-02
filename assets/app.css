@@ -96,14 +96,35 @@ a:hover { color: var(--color-accent-700); }
 .breadcrumb .sep { color: color-mix(in srgb, var(--color-text) 28%, transparent); }
 .breadcrumb .tail { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
 
-/* — the index's range sections — */
+/* — the index's range sections, an accordion on <details> — */
 .range-section { margin-bottom: 44px; }
 .range-head {
   display: flex; align-items: baseline; gap: 12px;
   padding-bottom: 9px; margin-bottom: 18px;
   border-bottom: 2px solid var(--color-divider);
+  cursor: pointer; list-style: none;
 }
+.range-head::-webkit-details-marker { display: none; }
 .range-head h3 { font-size: 24px; margin: 0; }
+
+/* The plus/minus reads as the one interactive mark on the row, so it carries
+   the accent and the hover. Two glyphs swapped rather than one restyled —
+   Material Symbols draws them from ligatures, not from a rotation. */
+.range-toggle {
+  display: flex; align-items: center; align-self: center; flex: none;
+  color: var(--color-accent);
+}
+.range-toggle .msym { font-size: 22px; }
+.tog-close { display: none; }
+.range-section[open] .tog-open { display: none; }
+.range-section[open] .tog-close { display: block; }
+.range-head:hover .range-toggle { color: var(--color-accent-700); }
+.range-head:hover h3 { color: var(--color-accent-700); }
+/* Collapsed, a range is a single row in a list — it should not keep the
+   spacing that separates an expanded grid from the next range. */
+.range-section:not([open]) { margin-bottom: 18px; }
+.range-section:not([open]) .range-head { margin-bottom: 0; }
+
 .range-owned {
   margin-left: auto; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 50%, transparent);

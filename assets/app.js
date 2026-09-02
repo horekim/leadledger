@@ -104,32 +104,36 @@
     }
   });
 
-  /* ── The rail accordion remembers what you left open ───────────────────── */
+  /* ── Accordions remember what you left open ────────────────────────────── */
 
-  var RAIL_KEY = 'll.rail.open';
+  function accordionMemory(nodes, key, applyClosed) {
+    if (!nodes.length) { return; }
 
-  function railState() {
-    try { return JSON.parse(window.localStorage.getItem(RAIL_KEY) || '{}'); }
-    catch (err) { return {}; }
-  }
+    function read() {
+      try { return JSON.parse(window.localStorage.getItem(key) || '{}'); }
+      catch (err) { return {}; }
+    }
 
-  (function initRail() {
-    var ranges = $$('.rail-range');
-    if (!ranges.length) { return; }
-    var state = railState();
+    var state = read();
 
-    ranges.forEach(function (el) {
-      var key = el.getAttribute('data-range');
-      // The range holding the open set always starts expanded.
-      if (!el.open && state[key]) { el.open = true; }
+    nodes.forEach(function (el) {
+      var id = el.getAttribute('data-range');
+
+      if (state[id] === true && !el.open) { el.open = true; }
+      // The rail's active range is opened by the server and must stay open,
+      // so only the front page applies a remembered closed state.
+      if (state[id] === false && el.open && applyClosed) { el.open = false; }
 
       el.addEventListener('toggle', function () {
-        var next = railState();
-        next[key] = el.open;
-        try { window.localStorage.setItem(RAIL_KEY, JSON.stringify(next)); } catch (err) { /* private mode */ }
+        var next = read();
+        next[id] = el.open;
+        try { window.localStorage.setItem(key, JSON.stringify(next)); } catch (err) { /* private mode */ }
       });
     });
-  }());
+  }
+
+  accordionMemory($$('.rail-range'), 'll.rail.open', false);
+  accordionMemory($$('.range-section'), 'll.index.open', true);
 
   /* ── Dialogs and the drawer ────────────────────────────────────────────── */
 

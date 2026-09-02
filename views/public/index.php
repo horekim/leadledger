@@ -37,15 +37,19 @@
   <?php endif; ?>
 
   <?php foreach ($catalogue as $range): ?>
-    <section class="range-section">
-      <div class="range-head">
+    <details class="range-section" data-range="<?= e($range['slug']) ?>" open>
+      <summary class="range-head">
+        <span class="range-toggle" aria-hidden="true">
+          <span class="msym tog-open">add</span>
+          <span class="msym tog-close">remove</span>
+        </span>
         <h3><?= e($range['name']) ?></h3>
         <span class="meta">
           <?= e(num(count($range['sets']))) ?> <?= e(plural(count($range['sets']), 'set', 'sets')) ?>
           · <?= e(num($range['mini_count'])) ?> <?= e(plural($range['mini_count'], 'miniature', 'miniatures')) ?>
         </span>
         <span class="range-owned"><?= e(num($range['owned_count'])) ?> / <?= e(num($range['mini_count'])) ?> owned</span>
-      </div>
+      </summary>
 
       <?php if (!$range['sets']): ?>
         <div class="empty-range">
@@ -76,7 +80,7 @@
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
-    </section>
+    </details>
   <?php endforeach; ?>
 
 </main>
