@@ -44,11 +44,16 @@
           <span class="msym tog-close">remove</span>
         </span>
         <h3><?= e($range['name']) ?></h3>
-        <span class="meta">
-          <?= e(num(count($range['sets']))) ?> <?= e(plural(count($range['sets']), 'set', 'sets')) ?>
-          · <?= e(num($range['mini_count'])) ?> <?= e(plural($range['mini_count'], 'miniature', 'miniatures')) ?>
+        <?php /* Grouped so the two can share a line on a narrow screen; the
+                 wrapper is display:contents above the breakpoint, so the row
+                 above it is unchanged. */ ?>
+        <span class="range-facts">
+          <span class="meta">
+            <?= e(num(count($range['sets']))) ?> <?= e(plural(count($range['sets']), 'set', 'sets')) ?>
+            · <?= e(num($range['mini_count'])) ?> <?= e(plural($range['mini_count'], 'miniature', 'miniatures')) ?>
+          </span>
+          <span class="range-owned"><?= e(num($range['owned_count'])) ?> / <?= e(num($range['mini_count'])) ?> owned</span>
         </span>
-        <span class="range-owned"><?= e(num($range['owned_count'])) ?> / <?= e(num($range['mini_count'])) ?> owned</span>
       </summary>
 
       <?php if (!$range['sets']): ?>

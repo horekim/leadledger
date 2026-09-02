@@ -125,6 +125,7 @@ a:hover { color: var(--color-accent-700); }
 .range-section:not([open]) { margin-bottom: 18px; }
 .range-section:not([open]) .range-head { margin-bottom: 0; }
 
+.range-facts { display: contents; }
 .range-owned {
   margin-left: auto; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 50%, transparent);
@@ -538,6 +539,21 @@ tr.dragging { opacity: .45; }
   .auth-form { padding: 32px 16px 40px; max-width: none; }
   .auth-form h1 { font-size: 34px; }
   .auth-aside { border-left: 0; border-top: 2px solid var(--color-divider); padding: 32px 16px 44px; }
+  /* The range title and its toggle take the full width; the two facts drop
+     below on one line, set counts left and the owned ratio right. */
+  .range-head { flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+  /* basis 0, so a long name wraps inside the heading instead of pushing
+     itself onto a line below the toggle. */
+  .range-head h3 { flex: 1 1 0; min-width: 0; }
+  .range-facts {
+    display: flex; flex: 1 1 100%;
+    align-items: baseline; justify-content: space-between; gap: 12px;
+  }
+  .range-facts .meta,
+  .range-facts .range-owned {
+    margin-left: 0; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+  }
+
   .set-grid { grid-template-columns: 1fr; }
   .mini-grid[data-density] { grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 14px; }
   .drawer-panel { width: 100%; max-width: 100%; border-left: 0; padding: 18px 16px 40px; }
