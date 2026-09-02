@@ -272,6 +272,38 @@
       }
     }
 
+    function titleCasePart(part) {
+      // Leave deliberate inner capitals alone (McDeath, D'Arcy); normalise the rest.
+      if (part !== part.toLowerCase() && part !== part.toUpperCase()) { return part; }
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    }
+
+    /**
+     * Photographs are usually filed under the miniature's name behind its
+     * catalogue reference — "r3_03_fleshthrob.png" is Fleshthrob. Drop the
+     * leading coded segments and title-case what is left.
+     *
+     * Returns '' when the filename does not read that way, so a camera name
+     * like IMG_4821 is never mistaken for a miniature.
+     */
+    function nameFromFilename(filename) {
+      var stem  = String(filename).replace(/\.[^.]+$/, '');
+      var parts = stem.split(/[_\-\s]+/).filter(Boolean);
+      var dropped = 0;
+
+      while (parts.length > 1 && /^[a-z]{0,3}\d+[a-z]?$/i.test(parts[0])) {
+        parts.shift();
+        dropped++;
+      }
+      if (!parts.length) { return ''; }
+
+      var singleWord = dropped === 0 && parts.length === 1 && /^[a-z]+$/i.test(parts[0]);
+      if (dropped === 0 && !singleWord) { return ''; }
+      if (parts.some(function (p) { return /^\d+$/.test(p); })) { return ''; }
+
+      return parts.map(titleCasePart).join(' ');
+    }
+
     function takeFile(f) {
       if (!f || f.type.indexOf('image/') !== 0) { return; }
       var dt = new DataTransfer();
@@ -280,6 +312,14 @@
       removeFl.value = '0';
       if (errorEl) { errorEl.hidden = true; }
       showPhoto(URL.createObjectURL(f), f.name);
+
+      // Only ever fill a blank field — never overwrite a name already typed,
+      // or the one belonging to the miniature whose photo is being replaced.
+      var nameField = $('[data-drawer-name]', drawer);
+      if (nameField && nameField.value.trim() === '') {
+        var guess = nameFromFilename(f.name);
+        if (guess) { nameField.value = guess; }
+      }
     }
 
     dropzone.addEventListener('click', function () { file.click(); });
