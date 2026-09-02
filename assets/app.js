@@ -36,6 +36,10 @@
 
   /* ── Reading a miniature's name out of its filename ───────────────────── */
 
+  var CODEY  = /^[a-z]{0,3}\d+[a-z]?$/i;
+  // Camera and screenshot prefixes — the only filenames that must be refused.
+  var CAMERA = /^(img|dsc|dscn|dscf|pxl|p|photo|image|picture|screenshot|screen|scan|capture|mvimg|foto)$/i;
+
   function titleCasePart(part) {
     // Leave deliberate inner capitals alone (McDeath, D'Arcy); normalise the rest.
     if (part !== part.toLowerCase() && part !== part.toUpperCase()) { return part; }
@@ -43,27 +47,26 @@
   }
 
   /**
-   * Photographs are usually filed under the miniature's name behind its
-   * catalogue reference — "r3_03_fleshthrob.png" is Fleshthrob. Drop the
-   * leading coded segments and title-case what is left.
+   * Read a miniature's name out of its filename.
    *
-   * Returns '' when the filename does not read that way, so a camera name
-   * like IMG_4821 is never mistaken for a miniature.
+   *   r3_03_fleshthrob.png  -> Fleshthrob
+   *   mind_flayer.png       -> Mind Flayer
+   *   space_marine_2.png    -> Space Marine 2
+   *
+   * Leading catalogue-ish segments are dropped, the rest becomes the name.
+   * Returns '' only for filenames that clearly carry no name at all — a camera
+   * or screenshot prefix, nothing but digits, or a bare code.
    */
   function nameFromFilename(filename) {
     var stem  = String(filename).replace(/\.[^.]+$/, '');
     var parts = stem.split(/[_\-\s]+/).filter(Boolean);
-    var dropped = 0;
 
-    while (parts.length > 1 && /^[a-z]{0,3}\d+[a-z]?$/i.test(parts[0])) {
-      parts.shift();
-      dropped++;
-    }
+    while (parts.length > 1 && CODEY.test(parts[0])) { parts.shift(); }
     if (!parts.length) { return ''; }
 
-    var singleWord = dropped === 0 && parts.length === 1 && /^[a-z]+$/i.test(parts[0]);
-    if (dropped === 0 && !singleWord) { return ''; }
-    if (parts.some(function (p) { return /^\d+$/.test(p); })) { return ''; }
+    if (CAMERA.test(parts[0])) { return ''; }
+    if (parts.every(function (p) { return /^\d+$/.test(p); })) { return ''; }
+    if (parts.length === 1 && CODEY.test(parts[0])) { return ''; }
 
     return parts.map(titleCasePart).join(' ');
   }
