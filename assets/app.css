@@ -562,7 +562,12 @@ tr.dragging { opacity: .45; }
   .set-grid { grid-template-columns: 1fr; }
   .mini-grid[data-density] { grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 14px; }
   .drawer-panel { width: 100%; max-width: 100%; border-left: 0; padding: 18px 16px 40px; }
-  .admin-range-head { flex-wrap: wrap; }
+  /* The set counts are already in the menu beside every range, so they go —
+     leaving the title and Add set to share one row. */
+  .admin-range-head { flex-wrap: nowrap; align-items: center; gap: 12px; }
+  .admin-range-head .meta-up { display: none; }
+  .admin-range-head h3 { flex: 1 1 0; min-width: 0; font-size: 20px; }
+  .admin-range-head .section-actions { flex: none; }
 }
 
 /* The per-card toggle form must not add a box of its own. */
