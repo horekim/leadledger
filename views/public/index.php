@@ -5,7 +5,6 @@
 
   <div class="page-head">
     <div>
-      <div class="kicker">Citadel Miniatures</div>
       <h1>&rsquo;EAVY METAL</h1>
       <p class="page-blurb">My collection of Oldhammer miniatures.</p>
     </div>

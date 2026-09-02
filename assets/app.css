@@ -352,7 +352,6 @@ details[open] > summary .tog-close { display: block; }
   padding-bottom: 14px; margin-bottom: 18px; border-bottom: 2px solid var(--color-divider);
 }
 .section-head h2 { margin: 0; }
-.section-head .kicker { margin-bottom: 5px; }
 .section-actions { display: flex; gap: var(--space-2); flex: none; }
 .btn-sm { font-size: 12px; }
 

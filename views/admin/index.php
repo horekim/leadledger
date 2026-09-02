@@ -7,7 +7,6 @@
 
     <div class="section-head is-row">
       <div>
-        <div class="kicker">Manage</div>
         <h2>All ranges</h2>
       </div>
       <div class="section-actions">
