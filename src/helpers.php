@@ -24,10 +24,26 @@ function base_url(): string
 /**
  * A URL for a static file — stylesheets, scripts, uploaded photographs.
  * Never goes through the front controller.
+ *
+ * Anything under assets/ carries its modification time as a query string, so a
+ * stylesheet or script edit reaches the browser the moment it is uploaded
+ * rather than whenever the cache happens to expire. Photographs are left
+ * alone: their names are random and their contents never change, so they are
+ * safe to cache forever and not worth a stat() each.
  */
 function asset(string $path = ''): string
 {
-    return base_url() . '/' . ltrim($path, '/');
+    $rel = ltrim($path, '/');
+    $url = base_url() . '/' . $rel;
+
+    if (str_starts_with($rel, 'assets/')) {
+        $file = dirname(__DIR__) . '/' . $rel;
+        if (is_file($file)) {
+            $url .= '?v=' . filemtime($file);
+        }
+    }
+
+    return $url;
 }
 
 /**
