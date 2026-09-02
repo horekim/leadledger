@@ -42,6 +42,20 @@ function auth_set_persist(bool $on): void
     ]);
 }
 
+/**
+ * True until the first account exists. Sign-up is open only while this holds —
+ * the archive keeps one collection that only an admin edits, so there is
+ * nothing for a second account to do.
+ */
+function auth_accepts_signup(): bool
+{
+    static $open = null;
+    if ($open === null) {
+        $open = (int)q('SELECT COUNT(*) AS n FROM ' . tbl('users'))->fetch()['n'] === 0;
+    }
+    return $open;
+}
+
 function current_user(): ?array
 {
     static $user = false;

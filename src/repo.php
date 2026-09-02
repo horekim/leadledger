@@ -10,7 +10,7 @@
  * The whole catalogue: ranges alphabetical, sets natural-sorted by code,
  * each set carrying its miniature count and this user's owned count.
  */
-function repo_catalogue(?int $userId): array
+function repo_catalogue(): array
 {
     $sql = 'SELECT r.id           AS range_id,
                    r.name         AS range_name,
@@ -24,11 +24,11 @@ function repo_catalogue(?int $userId): array
               FROM ' . tbl('ranges') . ' r
          LEFT JOIN ' . tbl('sets') . ' s        ON s.range_id = r.id
          LEFT JOIN ' . tbl('miniatures') . ' m  ON m.set_id = s.id
-         LEFT JOIN ' . tbl('ownership') . ' o   ON o.miniature_id = m.id AND o.user_id = :uid
+         LEFT JOIN ' . tbl('ownership') . ' o   ON o.miniature_id = m.id
           GROUP BY r.id, r.name, r.slug, s.id, s.code, s.slug, s.name
           ORDER BY r.name ASC, r.id ASC, s.code ASC, s.name ASC, s.id ASC';
 
-    $rows = q($sql, ['uid' => $userId ?? 0])->fetchAll();
+    $rows = q($sql)->fetchAll();
 
     $ranges = [];
     foreach ($rows as $row) {
@@ -127,18 +127,18 @@ function repo_set(int $id): ?array
     return $row ?: null;
 }
 
-/** A set's miniatures in their manual order, each flagged owned for this user. */
-function repo_miniatures(int $setId, ?int $userId): array
+/** A set's miniatures in their manual order, each flagged owned. */
+function repo_miniatures(int $setId): array
 {
     $sql = 'SELECT m.id, m.code, m.name, m.photo, m.sort_index,
                    (o.miniature_id IS NOT NULL) AS owned
               FROM ' . tbl('miniatures') . ' m
          LEFT JOIN ' . tbl('ownership') . ' o
-                ON o.miniature_id = m.id AND o.user_id = :uid
+                ON o.miniature_id = m.id
              WHERE m.set_id = :sid
           ORDER BY m.sort_index ASC, m.id ASC';
 
-    $rows = q($sql, ['uid' => $userId ?? 0, 'sid' => $setId])->fetchAll();
+    $rows = q($sql, ['sid' => $setId])->fetchAll();
     foreach ($rows as &$row) {
         $row['id']    = (int)$row['id'];
         $row['owned'] = (bool)$row['owned'];
@@ -153,31 +153,27 @@ function repo_miniature(int $id): ?array
     return $row ?: null;
 }
 
-/* — ownership — private per user, and idempotent both ways — */
+/* — ownership — one collection for the whole archive, idempotent both ways — */
 
-function repo_set_owned(int $userId, int $miniatureId, bool $owned): void
+function repo_set_owned(int $miniatureId, bool $owned): void
 {
     if ($owned) {
         q(
-            'INSERT IGNORE INTO ' . tbl('ownership') . ' (user_id, miniature_id, created_at)
-             VALUES (?, ?, NOW())',
-            [$userId, $miniatureId]
+            'INSERT IGNORE INTO ' . tbl('ownership') . ' (miniature_id, created_at) VALUES (?, NOW())',
+            [$miniatureId]
         );
     } else {
-        q(
-            'DELETE FROM ' . tbl('ownership') . ' WHERE user_id = ? AND miniature_id = ?',
-            [$userId, $miniatureId]
-        );
+        q('DELETE FROM ' . tbl('ownership') . ' WHERE miniature_id = ?', [$miniatureId]);
     }
 }
 
-function repo_owned_count_in_set(int $userId, int $setId): int
+function repo_owned_count_in_set(int $setId): int
 {
     $row = q(
         'SELECT COUNT(*) AS n FROM ' . tbl('ownership') . ' o
            JOIN ' . tbl('miniatures') . ' m ON m.id = o.miniature_id
-          WHERE o.user_id = ? AND m.set_id = ?',
-        [$userId, $setId]
+          WHERE m.set_id = ?',
+        [$setId]
     )->fetch();
     return (int)$row['n'];
 }

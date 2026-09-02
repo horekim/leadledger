@@ -4,7 +4,7 @@
  * @var array $catalogue @var array $range @var array $set
  * @var array $miniatures @var string $filter @var string $density
  */
-$signed  = is_signed_in();
+$canEdit = is_admin(); // one collection: everyone sees it, an admin changes it
 $total   = count($miniatures);
 $ownedN  = 0;
 foreach ($miniatures as $m) {
@@ -114,7 +114,7 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
             $label = ($m['owned'] ? 'Owned — ' : 'Not owned — ') . $what;
           ?>
           <div class="card mini-card<?= $m['owned'] ? ' is-owned' : '' ?>" data-mini="<?= e((string)$m['id']) ?>">
-            <?php if ($signed): ?>
+            <?php if ($canEdit): ?>
               <form method="post" action="<?= e(url('api/collection/' . $m['id'])) ?>" data-toggle>
                 <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                 <input type="hidden" name="owned" value="<?= $m['owned'] ? '0' : '1' ?>" data-owned-field>
@@ -131,16 +131,20 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
                 </button>
               </form>
             <?php else: ?>
-              <a class="plate mini-plate" href="<?= e(url('sign-in')) ?>" aria-label="Sign in to tick <?= e($what) ?>">
+              <?php /* Read-only. The tick shows only where it means something —
+                       an empty square nobody can press is an affordance that lies. */ ?>
+              <div class="plate mini-plate is-static">
                 <span class="mini-photo<?= $photo ? '' : ' is-blank' ?>"
                       <?= $photo ? 'style="background-image:url(\'' . e($photo) . '\')"' : '' ?>></span>
-              </a>
-              <a class="tick" href="<?= e(url('sign-in')) ?>" aria-label="Sign in to tick <?= e($what) ?>">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="3" stroke-linecap="square" aria-hidden="true">
-                  <path d="M5 12.5 10 17.5 19 7"/>
-                </svg>
-              </a>
+              </div>
+              <?php if ($m['owned']): ?>
+                <span class="tick is-static" role="img" aria-label="Owned">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="3" stroke-linecap="square" aria-hidden="true">
+                    <path d="M5 12.5 10 17.5 19 7"/>
+                  </svg>
+                </span>
+              <?php endif; ?>
             <?php endif; ?>
 
             <?php /* Code and name are both optional; a card may carry neither. */ ?>

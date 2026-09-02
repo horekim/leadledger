@@ -106,7 +106,7 @@ tells you when there is nothing left to do — delete it then.
 | `POST /sign-out` | |
 | `GET /admin` | Ranges & sets |
 | `GET /admin/sets/{id}` | A set's miniatures |
-| `POST /api/collection/{miniature}` | Toggle owned — idempotent, also accepts `PUT` / `DELETE` |
+| `POST /api/collection/{miniature}` | Toggle owned, admin only — idempotent, also accepts `PUT` / `DELETE` |
 | `POST /admin/sets/{set}/reorder` | Persist a drag-reorder |
 
 Everything works without JavaScript — the ticks, filters, density switcher and
@@ -114,6 +114,14 @@ admin forms are all real links and form posts. JavaScript upgrades them to
 optimistic toggles, modal dialogs and drag-and-drop.
 
 ## Where this departs from the handoff
+
+**Ownership is the archive's, not each visitor's.** The handoff makes ownership
+private per user — every collector keeps their own ledger. Here there is one
+collection: the ticks are the catalogue owner's, everyone sees them, and only an
+admin can change them. `ll_ownership` therefore has no user column, the public
+set page renders the tick as a read-only badge on owned cards rather than a
+control on every card, and sign-up is open only until the first account exists,
+because a second account would have nothing to do.
 
 **Two sets in the same range may carry the same code.** The handoff treats a
 set's code as its identity within a range; here it is a label. Because the
@@ -135,7 +143,7 @@ server both refuse to save a miniature without a photograph.
 | --- | --- |
 | Drawer Code/Name fields did not save | Real form, posts to `admin/miniature/save` |
 | Photo dropzone was prototype-only | Real upload to `uploads/`, validated by image bytes, old file removed on replace |
-| Owned ticks did not persist | `ll_ownership`, private per user, idempotent both ways |
+| Owned ticks did not persist | `ll_ownership`, one row per miniature, idempotent both ways |
 | Headline counts were invented | Derived in one aggregate query — no N+1 |
 | No Esc-to-close | Esc closes the topmost dialog or the drawer |
 | No search | Still deliberately absent, as specified |

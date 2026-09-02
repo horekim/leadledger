@@ -9,7 +9,7 @@
       <h1>Every set, every range</h1>
       <p class="page-blurb">
         Citadel and Games Workshop miniatures from 1984 to 1992, catalogued range by range.
-        Sign in and tick what you own — a set page then reads as a map of the gaps.
+        Ticked miniatures are the ones in the collection — a set page reads as a map of the gaps.
       </p>
     </div>
     <div class="stat-row">

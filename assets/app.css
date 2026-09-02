@@ -265,6 +265,11 @@ a:hover { color: var(--color-accent-700); }
 .is-owned .tick { border-color: var(--color-accent); background: var(--color-accent); }
 .is-owned .tick svg { opacity: 1; }
 
+/* Read-only view: the plate is not pressable and the tick is a badge. */
+.mini-plate.is-static { cursor: default; }
+.tick.is-static { cursor: default; }
+.tick.is-static svg { opacity: 1; }
+
 .mini-caption { display: flex; flex-direction: column; gap: 2px; text-align: left; }
 .mini-code {
   font-size: 10px; letter-spacing: .1em; text-transform: uppercase;

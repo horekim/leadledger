@@ -97,9 +97,7 @@ if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_
         json_fail('Use POST, PUT or DELETE.', 405);
     }
     csrf_guard();
-    if (!is_signed_in()) {
-        json_fail('Sign in first.', 401);
-    }
+    require_admin(); // one collection, and only an admin edits it
 
     $miniId = (int)$seg[2];
     $mini   = repo_miniature($miniId);
@@ -116,14 +114,14 @@ if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_
         $wanted = (string)($_POST['owned'] ?? json_body()['owned'] ?? '1') === '1';
     }
 
-    repo_set_owned(user_id(), $miniId, $wanted);
+    repo_set_owned($miniId, $wanted);
 
     if (is_json_request()) {
         $setId = (int)$mini['set_id'];
         json_out([
             'ok'          => true,
             'owned'       => $wanted,
-            'owned_count' => repo_owned_count_in_set(user_id(), $setId),
+            'owned_count' => repo_owned_count_in_set($setId),
             'total'       => repo_count_in_set($setId),
         ]);
     }
@@ -158,6 +156,9 @@ if ($seg === ['sign-in']) {
     }
 
     $mode  = ($_GET['mode'] ?? $_POST['mode'] ?? 'in') === 'up' ? 'up' : 'in';
+    if ($mode === 'up' && !auth_accepts_signup()) {
+        $mode = 'in'; // the owner account already exists
+    }
     $error = '';
     $old   = [];
 
@@ -171,6 +172,7 @@ if ($seg === ['sign-in']) {
         [$ok, $error] = $mode === 'up'
             ? auth_register((string)($_POST['name'] ?? ''), $email, $password, $remember)
             : auth_login($email, $password, $remember);
+
 
         if ($ok) {
             redirect('');
@@ -199,7 +201,7 @@ if (($seg[0] ?? '') === 'admin') {
         render('admin/index', [
             'title'     => 'Ranges & sets',
             'screen'    => 'admin',
-            'catalogue' => repo_catalogue(user_id()),
+            'catalogue' => repo_catalogue(),
         ]);
         exit;
     }
@@ -214,7 +216,7 @@ if (($seg[0] ?? '') === 'admin') {
             'title'      => $set['code'] . ' ' . $set['name'],
             'screen'     => 'admin',
             'set'        => $set,
-            'miniatures' => repo_miniatures((int)$set['id'], null),
+            'miniatures' => repo_miniatures((int)$set['id']),
         ]);
         exit;
     }
@@ -365,7 +367,7 @@ if (($seg[0] ?? '') === 'admin') {
 
 // GET /
 if ($seg === []) {
-    $catalogue = repo_catalogue(user_id());
+    $catalogue = repo_catalogue();
     render('public/index', [
         'title'     => 'The whole archive',
         'catalogue' => $catalogue,
@@ -388,10 +390,10 @@ if (count($seg) === 2) {
 
     render('public/set', [
         'title'      => $set['name'],
-        'catalogue'  => repo_catalogue(user_id()),
+        'catalogue'  => repo_catalogue(),
         'range'      => ['id' => (int)$set['range_id'], 'name' => $set['range_name'], 'slug' => $set['range_slug']],
         'set'        => $set,
-        'miniatures' => repo_miniatures((int)$set['id'], user_id()),
+        'miniatures' => repo_miniatures((int)$set['id']),
         'filter'     => $filter,
         'density'    => density(),
     ]);

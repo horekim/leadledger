@@ -58,15 +58,12 @@ CREATE TABLE IF NOT EXISTS ll_miniatures (
     REFERENCES ll_sets (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Ownership is private per user; nothing in the UI exposes who owns what.
+-- One collection, the archive's own. Everyone sees the same ticks; only an
+-- admin can change them, so there is no user column.
 CREATE TABLE IF NOT EXISTS ll_ownership (
-  user_id      INT UNSIGNED NOT NULL,
   miniature_id INT UNSIGNED NOT NULL,
   created_at   DATETIME     NOT NULL,
-  PRIMARY KEY (user_id, miniature_id),
-  KEY ix_own_mini (miniature_id),
-  CONSTRAINT fk_own_user FOREIGN KEY (user_id)
-    REFERENCES ll_users (id) ON DELETE CASCADE,
+  PRIMARY KEY (miniature_id),
   CONSTRAINT fk_own_mini FOREIGN KEY (miniature_id)
     REFERENCES ll_miniatures (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

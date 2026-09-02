@@ -17,6 +17,7 @@ require_admin();
 $prefix = (string)(config('db_prefix') ?? 'll_');
 $minis  = $prefix . 'miniatures';
 $sets   = $prefix . 'sets';
+$own    = $prefix . 'ownership';
 $steps  = [];
 $fatal  = null;
 $ran    = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
@@ -51,6 +52,18 @@ function index_exists(string $table, string $index): bool
            FROM information_schema.STATISTICS
           WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND INDEX_NAME = ?',
         [$table, $index]
+    )->fetch();
+    return (int)$row['n'] > 0;
+}
+
+function fk_exists(string $table, string $name): bool
+{
+    $row = q(
+        'SELECT COUNT(*) AS n
+           FROM information_schema.TABLE_CONSTRAINTS
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?
+            AND CONSTRAINT_NAME = ? AND CONSTRAINT_TYPE = \'FOREIGN KEY\'',
+        [$table, $name]
     )->fetch();
     return (int)$row['n'] > 0;
 }
@@ -202,6 +215,44 @@ try {
     } else {
         step('skip', 'Codes may already repeat within a range.');
     }
+    /* ── ownership: one collection for the archive, not one per user ── */
+
+    if (column($own, 'user_id') === null) {
+        step('skip', 'Ownership is already a single collection.');
+    } else {
+        $dupes = (int)q(
+            'SELECT COUNT(*) AS n FROM (
+               SELECT miniature_id FROM `' . $own . '` GROUP BY miniature_id HAVING COUNT(*) > 1
+             ) d'
+        )->fetch()['n'];
+
+        if (!$ran) {
+            step('todo', 'Ownership will drop its user column and become one collection for the whole archive.');
+            if ($dupes > 0) {
+                step('todo', $dupes . ' ' . plural($dupes, 'miniature is', 'miniatures are')
+                    . ' ticked by more than one account; those ticks merge into one.');
+            }
+        } else {
+            if (fk_exists($own, 'fk_own_user')) {
+                db()->exec('ALTER TABLE `' . $own . '` DROP FOREIGN KEY `fk_own_user`');
+            }
+            // Keep the earliest account's row for each miniature, then the
+            // column can go: without this the new primary key would collide.
+            db()->exec(
+                'DELETE o1 FROM `' . $own . '` o1
+                   JOIN `' . $own . '` o2
+                     ON o1.miniature_id = o2.miniature_id AND o1.user_id > o2.user_id'
+            );
+            db()->exec(
+                'ALTER TABLE `' . $own . '`
+                   DROP PRIMARY KEY,
+                   DROP COLUMN `user_id`,
+                   ADD PRIMARY KEY (`miniature_id`)'
+            );
+            step('good', 'Ownership is now one collection for the whole archive'
+                . ($dupes > 0 ? ', with ' . $dupes . ' duplicated ' . plural($dupes, 'tick', 'ticks') . ' merged.' : '.'));
+        }
+    }
 } catch (Throwable $ex) {
     $fatal = $ex->getMessage();
 }
@@ -230,7 +281,8 @@ $blocked = array_filter($steps, static fn($s) => $s[0] === 'bad');
   <?php else: ?>
     <p class="page-blurb">
       Brings the tables in line with the current schema: a miniature's photograph becomes its one
-      required field, and two sets in the same range become free to share a code.
+      required field, two sets in the same range become free to share a code, and ownership becomes
+      a single collection for the whole archive rather than one per account.
     </p>
 
     <?php foreach ($steps as [$tone, $text]): ?>
