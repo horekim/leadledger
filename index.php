@@ -206,6 +206,31 @@ if (($seg[0] ?? '') === 'admin') {
         exit;
     }
 
+    // GET /admin/ranges/{id}
+    if (count($seg) === 3 && $seg[1] === 'ranges' && ctype_digit($seg[2])) {
+        $catalogue = repo_catalogue();
+        $rangeId   = (int)$seg[2];
+
+        $range = null;
+        foreach ($catalogue as $candidate) {
+            if ($candidate['id'] === $rangeId) {
+                $range = $candidate;
+                break;
+            }
+        }
+        if (!$range) {
+            not_found();
+        }
+
+        render('admin/range', [
+            'title'     => $range['name'],
+            'screen'    => 'admin',
+            'catalogue' => $catalogue,
+            'range'     => $range,
+        ]);
+        exit;
+    }
+
     // GET /admin/sets/{id}
     if (count($seg) === 3 && $seg[1] === 'sets' && ctype_digit($seg[2])) {
         $set = repo_set((int)$seg[2]);
@@ -215,6 +240,7 @@ if (($seg[0] ?? '') === 'admin') {
         render('admin/set', [
             'title'      => $set['code'] . ' ' . $set['name'],
             'screen'     => 'admin',
+            'catalogue'  => repo_catalogue(),
             'set'        => $set,
             'miniatures' => repo_miniatures((int)$set['id']),
         ]);
@@ -239,11 +265,11 @@ if (($seg[0] ?? '') === 'admin') {
             if ($id > 0) {
                 repo_update_range($id, $name);
                 flash('Range saved.');
-            } else {
-                repo_create_range($name);
-                flash('Range created.');
+                back_to('admin/ranges/' . $id);
             }
-            back_to('admin');
+            $newId = repo_create_range($name);
+            flash('Range created.');
+            redirect('admin/ranges/' . $newId);
         }
 
         if ($kind === 'set') {
@@ -357,9 +383,10 @@ if (($seg[0] ?? '') === 'admin') {
             redirect('admin');
         }
         if ($kind === 'set' && $id > 0) {
+            $set = repo_set($id);
             repo_delete_set($id);
             flash('Set deleted.');
-            redirect('admin');
+            redirect($set ? 'admin/ranges/' . (int)$set['range_id'] : 'admin');
         }
         if ($kind === 'miniature' && $id > 0) {
             $mini = repo_miniature($id);

@@ -1,18 +1,14 @@
 <?php /** Admin set page — the miniatures table and the edit drawer. @var array $set @var array $miniatures */ ?>
 <div class="admin-shell">
 
-  <nav class="admin-rail" aria-label="Admin sections">
-    <a class="is-active" href="<?= e(url('admin')) ?>">Ranges &amp; sets</a>
-  </nav>
+  <?php view('admin/_rail', ['catalogue' => $catalogue, 'activeRangeId' => (int)$set['range_id']]); ?>
 
   <main class="admin-main">
 
     <div class="section-head">
       <div>
         <div class="breadcrumb">
-          <a href="<?= e(url('admin')) ?>">&larr; Ranges &amp; sets</a>
-          <span class="sep">/</span>
-          <span class="tail"><?= e($set['range_name']) ?></span>
+          <a href="<?= e(url('admin/ranges/' . (int)$set['range_id'])) ?>">&larr; <?= e($set['range_name']) ?></a>
         </div>
         <h2><?= e($set['code']) ?> <?= e($set['name']) ?></h2>
         <div class="count-line"><?= e(num(count($miniatures))) ?> <?= e(plural(count($miniatures), 'miniature', 'miniatures')) ?></div>

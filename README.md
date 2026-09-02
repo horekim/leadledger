@@ -104,7 +104,8 @@ tells you when there is nothing left to do — delete it then.
 | `GET /{range-slug}/{set-code}` | A set's photo grid |
 | `GET POST /sign-in` | Sign in / create account (`?mode=up`) |
 | `POST /sign-out` | |
-| `GET /admin` | Ranges & sets |
+| `GET /admin` | All ranges, each with its sets |
+| `GET /admin/ranges/{id}` | One range's sets |
 | `GET /admin/sets/{id}` | A set's miniatures |
 | `POST /api/collection/{miniature}` | Toggle owned, admin only — idempotent, also accepts `PUT` / `DELETE` |
 | `POST /admin/sets/{set}/reorder` | Persist a drag-reorder |
