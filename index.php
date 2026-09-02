@@ -369,7 +369,7 @@ if (($seg[0] ?? '') === 'admin') {
 if ($seg === []) {
     $catalogue = repo_catalogue();
     render('public/index', [
-        'title'     => 'The whole archive',
+        'title'     => '’Eavy Metal',
         'catalogue' => $catalogue,
         'totals'    => repo_totals($catalogue),
     ]);

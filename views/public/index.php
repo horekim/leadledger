@@ -5,12 +5,9 @@
 
   <div class="page-head">
     <div>
-      <div class="kicker">The whole archive</div>
-      <h1>Every set, every range</h1>
-      <p class="page-blurb">
-        Citadel and Games Workshop miniatures from 1984 to 1992, catalogued range by range.
-        Ticked miniatures are the ones in the collection — a set page reads as a map of the gaps.
-      </p>
+      <div class="kicker">Citadel Miniatures</div>
+      <h1>&rsquo;EAVY METAL</h1>
+      <p class="page-blurb">My collection of Oldhammer miniatures.</p>
     </div>
     <div class="stat-row">
       <div>
