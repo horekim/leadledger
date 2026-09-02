@@ -142,10 +142,14 @@ a:hover { color: var(--color-accent-700); }
 
 /* ── 3. The set page's left rail — set pages only, never the index ── */
 
+/* The rails are navigation, not copy — dragging across them should select
+   nothing. Set on the rail rather than globally so the archive's own text
+   stays selectable. */
 .rail {
   border-right: 2px solid var(--color-divider);
   position: sticky; top: 53px; height: calc(100vh - 53px);
   overflow: auto; padding: 20px 0 40px;
+  -webkit-user-select: none; user-select: none;
 }
 .rail-label {
   padding: 0 20px 14px; font-size: 10px; letter-spacing: .08em;
@@ -287,6 +291,7 @@ a:hover { color: var(--color-accent-700); }
   background: var(--color-surface); border-right: 2px solid var(--color-divider);
   padding: 18px 0; position: sticky; top: 53px; height: calc(100vh - 53px);
   display: flex; flex-direction: column;
+  -webkit-user-select: none; user-select: none;
 }
 .admin-rail a {
   display: block; padding: 8px 18px; text-decoration: none; color: inherit;
