@@ -11,8 +11,12 @@ function config(?string $key = null)
             header('Content-Type: text/plain; charset=utf-8');
             exit(
                 "Lead Ledger is not configured yet.\n\n" .
-                "Copy config.example.php to config.php and fill in the four\n" .
-                "connection values from the one.com control panel, then reload.\n"
+                "Create config.php beside index.php, returning an array with:\n\n" .
+                "    db_host, db_name, db_user, db_pass,\n" .
+                "    db_prefix, site_name, pretty_urls, debug\n\n" .
+                "The four connection values come from the one.com control panel,\n" .
+                "under Web hosting -> MySQL/Database. The README has the file to\n" .
+                "copy. Then reload this page.\n"
             );
         }
         $config = require $file;
