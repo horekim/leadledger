@@ -21,7 +21,7 @@ Options -Indexes
 </IfModule>
 
 # Credentials and the schema never go over HTTP.
-<FilesMatch "^(config\.php|config\.example\.php|schema\.sql)$">
+<FilesMatch "^(secrets\.php|config\.php|schema\.sql)$">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
