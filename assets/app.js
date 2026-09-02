@@ -64,16 +64,6 @@
           if (tick) { tick.setAttribute('aria-pressed', want ? 'false' : 'true'); }
           window.alert(err.message);
         });
-      return;
-    }
-
-    // "Tick whole set" — one request, then repaint from the server.
-    if (form.matches('form[data-bulk]')) {
-      ev.preventDefault();
-      var owned = $('input[name="owned"]', form).value;
-      post(form.action, { owned: owned })
-        .then(function () { window.location.reload(); })
-        .catch(function (err) { window.alert(err.message); });
     }
   });
 

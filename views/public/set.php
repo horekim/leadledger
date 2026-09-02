@@ -39,7 +39,6 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
     }
     return $here . ($params ? '?' . http_build_query($params) : '');
 };
-$allOwned = $total > 0 && $ownedN === $total;
 ?>
 <div class="shell">
 
@@ -86,16 +85,6 @@ $allOwned = $total > 0 && $ownedN === $total;
         <a class="<?= $filter === 'owned' ? 'is-active' : '' ?>"   href="<?= e($qs(['show' => 'owned'])) ?>">Owned</a>
         <a class="<?= $filter === 'missing' ? 'is-active' : '' ?>" href="<?= e($qs(['show' => 'missing'])) ?>">Missing</a>
       </div>
-
-      <?php if ($signed && $total > 0): ?>
-        <form method="post" action="<?= e(url('api/collection/sets/' . (int)$set['id'])) ?>" data-bulk>
-          <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-          <input type="hidden" name="owned" value="<?= $allOwned ? '0' : '1' ?>">
-          <button type="submit" class="btn btn-secondary btn-sm">
-            <?= $allOwned ? 'Clear whole set' : 'Tick whole set' ?>
-          </button>
-        </form>
-      <?php endif; ?>
 
       <span class="result-count">Showing <?= e(num(count($shown))) ?> of <?= e(num($total)) ?></span>
 

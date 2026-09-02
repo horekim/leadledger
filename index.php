@@ -91,35 +91,6 @@ function not_found(): void
 
 /* — routing — */
 
-// POST /api/collection/sets/{id}   bulk tick or clear a whole set
-if (count($seg) === 4 && $seg[0] === 'api' && $seg[1] === 'collection' && $seg[2] === 'sets' && ctype_digit($seg[3])) {
-    if ($method !== 'POST') {
-        json_fail('Use POST.', 405);
-    }
-    csrf_guard();
-    if (!is_signed_in()) {
-        json_fail('Sign in first.', 401);
-    }
-
-    $setId = (int)$seg[3];
-    if (!repo_set($setId)) {
-        json_fail('No such set.', 404);
-    }
-
-    $wanted = (string)($_POST['owned'] ?? json_body()['owned'] ?? '1') === '1';
-    repo_set_owned_bulk(user_id(), $setId, $wanted);
-
-    if (is_json_request()) {
-        json_out([
-            'ok'          => true,
-            'owned'       => $wanted,
-            'owned_count' => repo_owned_count_in_set(user_id(), $setId),
-            'total'       => repo_count_in_set($setId),
-        ]);
-    }
-    back_to();
-}
-
 // POST|PUT|DELETE /api/collection/{miniatureId}   idempotent owned toggle
 if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_digit($seg[2])) {
     if (!in_array($method, ['POST', 'PUT', 'DELETE'], true)) {

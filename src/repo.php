@@ -171,26 +171,6 @@ function repo_set_owned(int $userId, int $miniatureId, bool $owned): void
     }
 }
 
-/** Tick or clear a whole set in one statement, not N. */
-function repo_set_owned_bulk(int $userId, int $setId, bool $owned): int
-{
-    if ($owned) {
-        $stmt = q(
-            'INSERT IGNORE INTO ' . tbl('ownership') . ' (user_id, miniature_id, created_at)
-             SELECT ?, m.id, NOW() FROM ' . tbl('miniatures') . ' m WHERE m.set_id = ?',
-            [$userId, $setId]
-        );
-    } else {
-        $stmt = q(
-            'DELETE o FROM ' . tbl('ownership') . ' o
-               JOIN ' . tbl('miniatures') . ' m ON m.id = o.miniature_id
-              WHERE o.user_id = ? AND m.set_id = ?',
-            [$userId, $setId]
-        );
-    }
-    return $stmt->rowCount();
-}
-
 function repo_owned_count_in_set(int $userId, int $setId): int
 {
     $row = q(

@@ -92,7 +92,6 @@ tells you when there is nothing left to do — delete it then.
 | `GET /admin` | Ranges & sets |
 | `GET /admin/sets/{id}` | A set's miniatures |
 | `POST /api/collection/{miniature}` | Toggle owned — idempotent, also accepts `PUT` / `DELETE` |
-| `POST /api/collection/sets/{set}` | Tick or clear a whole set in one request |
 | `POST /admin/sets/{set}/reorder` | Persist a drag-reorder |
 
 Everything works without JavaScript — the ticks, filters, density switcher and
@@ -126,12 +125,13 @@ server both refuse to save a miniature without a photograph.
 | No Esc-to-close | Esc closes the topmost dialog or the drawer |
 | No search | Still deliberately absent, as specified |
 
-## Two judgment calls worth knowing about
+## A judgment call worth knowing about
 
 - **The header's Admin button only appears for the catalogue owner.** The design
   shows it for anyone signed in, but a collector has nothing to manage.
-- **"Tick whole set" sits in the set page's filter bar.** The handoff puts it in
-  "a set band header", which this layout does not have.
+
+Ticking is per miniature only. The handoff describes a "tick whole set" bulk
+action; it was built and then removed on request, so there is no bulk endpoint.
 
 ## Requirements
 
