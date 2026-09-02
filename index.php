@@ -290,6 +290,16 @@ if (($seg[0] ?? '') === 'admin') {
             not_found();
         }
 
+        // The bulk uploader posts one file per request and wants JSON back;
+        // the drawer posts a form and wants to land back on the set page.
+        $fail = static function (string $message) use ($setId): void {
+            if (is_json_request()) {
+                json_fail($message);
+            }
+            flash($message);
+            back_to('admin/sets/' . $setId);
+        };
+
         $existing = $id > 0 ? repo_miniature($id) : null;
         $photo    = $existing['photo'] ?? null;
         $dropped  = null; // the old file, deleted only once the save succeeds
@@ -302,8 +312,7 @@ if (($seg[0] ?? '') === 'admin') {
         if (!empty($_FILES['photo']['name'])) {
             [$stored, $err] = upload_photo($_FILES['photo']);
             if ($stored === null) {
-                flash($err);
-                back_to('admin/sets/' . $setId);
+                $fail($err);
             }
             $dropped = $existing['photo'] ?? null;
             $photo   = $stored;
@@ -311,22 +320,26 @@ if (($seg[0] ?? '') === 'admin') {
 
         // A miniature is its photograph. The code and name are optional.
         if ($photo === null) {
-            flash($existing
+            $fail($existing
                 ? 'A miniature needs a photograph — choose a replacement before saving.'
                 : 'A miniature needs a photograph.');
-            back_to('admin/sets/' . $setId);
         }
 
         if ($existing) {
             repo_update_miniature($id, $code, $name, $photo);
+            $created = $id;
             flash('Miniature saved.');
         } else {
-            repo_create_miniature($setId, $code, $name, $photo);
+            $created = repo_create_miniature($setId, $code, $name, $photo);
             flash('Miniature added.');
         }
 
         if ($dropped !== null && $dropped !== $photo) {
             upload_delete($dropped);
+        }
+
+        if (is_json_request()) {
+            json_out(['ok' => true, 'id' => $created, 'photo' => asset($photo)]);
         }
         redirect('admin/sets/' . $setId);
     }

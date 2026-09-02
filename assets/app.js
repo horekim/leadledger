@@ -34,6 +34,40 @@
     });
   }
 
+  /* ── Reading a miniature's name out of its filename ───────────────────── */
+
+  function titleCasePart(part) {
+    // Leave deliberate inner capitals alone (McDeath, D'Arcy); normalise the rest.
+    if (part !== part.toLowerCase() && part !== part.toUpperCase()) { return part; }
+    return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+  }
+
+  /**
+   * Photographs are usually filed under the miniature's name behind its
+   * catalogue reference — "r3_03_fleshthrob.png" is Fleshthrob. Drop the
+   * leading coded segments and title-case what is left.
+   *
+   * Returns '' when the filename does not read that way, so a camera name
+   * like IMG_4821 is never mistaken for a miniature.
+   */
+  function nameFromFilename(filename) {
+    var stem  = String(filename).replace(/\.[^.]+$/, '');
+    var parts = stem.split(/[_\-\s]+/).filter(Boolean);
+    var dropped = 0;
+
+    while (parts.length > 1 && /^[a-z]{0,3}\d+[a-z]?$/i.test(parts[0])) {
+      parts.shift();
+      dropped++;
+    }
+    if (!parts.length) { return ''; }
+
+    var singleWord = dropped === 0 && parts.length === 1 && /^[a-z]+$/i.test(parts[0]);
+    if (dropped === 0 && !singleWord) { return ''; }
+    if (parts.some(function (p) { return /^\d+$/.test(p); })) { return ''; }
+
+    return parts.map(titleCasePart).join(' ');
+  }
+
   /* ── Owned ticks — optimistic, no confirmation, no toast ───────────────── */
 
   function ownedLine(count, total) {
@@ -272,38 +306,6 @@
       }
     }
 
-    function titleCasePart(part) {
-      // Leave deliberate inner capitals alone (McDeath, D'Arcy); normalise the rest.
-      if (part !== part.toLowerCase() && part !== part.toUpperCase()) { return part; }
-      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
-    }
-
-    /**
-     * Photographs are usually filed under the miniature's name behind its
-     * catalogue reference — "r3_03_fleshthrob.png" is Fleshthrob. Drop the
-     * leading coded segments and title-case what is left.
-     *
-     * Returns '' when the filename does not read that way, so a camera name
-     * like IMG_4821 is never mistaken for a miniature.
-     */
-    function nameFromFilename(filename) {
-      var stem  = String(filename).replace(/\.[^.]+$/, '');
-      var parts = stem.split(/[_\-\s]+/).filter(Boolean);
-      var dropped = 0;
-
-      while (parts.length > 1 && /^[a-z]{0,3}\d+[a-z]?$/i.test(parts[0])) {
-        parts.shift();
-        dropped++;
-      }
-      if (!parts.length) { return ''; }
-
-      var singleWord = dropped === 0 && parts.length === 1 && /^[a-z]+$/i.test(parts[0]);
-      if (dropped === 0 && !singleWord) { return ''; }
-      if (parts.some(function (p) { return /^\d+$/.test(p); })) { return ''; }
-
-      return parts.map(titleCasePart).join(' ');
-    }
-
     function takeFile(f) {
       if (!f || f.type.indexOf('image/') !== 0) { return; }
       var dt = new DataTransfer();
@@ -369,6 +371,197 @@
       showPhoto(trigger.dataset.photo || '', trigger.dataset.photoName || '');
 
       openDialog(drawer);
+    });
+  }
+
+  /* ── Bulk add — one request per photograph ─────────────────────────────── */
+
+  var bulk = $('#bulk');
+
+  if (bulk) {
+    var bulkFile  = $('[data-bulk-file]', bulk);
+    var bulkZone  = $('[data-bulk-zone]', bulk);
+    var bulkList  = $('[data-bulk-list]', bulk);
+    var bulkStart = $('[data-bulk-start]', bulk);
+    var bulkError = $('[data-bulk-error]', bulk);
+    var queue     = [];
+    var running   = false;
+
+    function renderQueue() {
+      bulkList.textContent = '';
+
+      queue.forEach(function (item, i) {
+        var row = document.createElement('li');
+        row.className = 'bulk-row' + (item.state ? ' is-' + item.state : '');
+
+        var thumb = document.createElement('div');
+        thumb.className = 'plate bulk-thumb';
+        thumb.style.backgroundImage = 'url("' + item.url + '")';
+
+        var fields = document.createElement('div');
+        fields.className = 'bulk-fields';
+
+        var code = document.createElement('input');
+        code.className = 'input bulk-code';
+        code.placeholder = 'Code';
+        code.value = item.code;
+        code.addEventListener('input', function () { item.code = code.value; });
+
+        var name = document.createElement('input');
+        name.className = 'input';
+        name.placeholder = 'Name';
+        name.value = item.name;
+        name.addEventListener('input', function () { item.name = name.value; });
+
+        fields.appendChild(code);
+        fields.appendChild(name);
+
+        var status = document.createElement('div');
+        status.className = 'bulk-status';
+
+        if (item.state === 'done') {
+          status.innerHTML = '<span class="msym">check</span>';
+        } else if (item.state === 'failed') {
+          status.textContent = item.error || 'Failed';
+        } else if (item.state === 'uploading') {
+          status.textContent = 'Adding…';
+        } else {
+          var drop = document.createElement('button');
+          drop.type = 'button';
+          drop.className = 'icon-btn danger';
+          drop.setAttribute('aria-label', 'Remove ' + item.file.name);
+          drop.innerHTML = '<span class="msym">delete</span>';
+          drop.addEventListener('click', function () {
+            URL.revokeObjectURL(item.url);
+            queue.splice(i, 1);
+            renderQueue();
+          });
+          status.appendChild(drop);
+        }
+
+        row.appendChild(thumb);
+        row.appendChild(fields);
+        row.appendChild(status);
+        bulkList.appendChild(row);
+      });
+
+      var pending = queue.filter(function (x) { return x.state === 'queued'; }).length;
+      bulkStart.disabled = running || pending === 0;
+      bulkStart.textContent = pending
+        ? 'Add ' + pending + (pending === 1 ? ' miniature' : ' miniatures')
+        : 'Add miniatures';
+    }
+
+    function addFiles(files) {
+      Array.prototype.slice.call(files).forEach(function (f) {
+        if (f.type.indexOf('image/') !== 0) { return; }
+        queue.push({
+          file: f,
+          url: URL.createObjectURL(f),
+          name: nameFromFilename(f.name),
+          code: '',
+          state: 'queued',
+          error: ''
+        });
+      });
+      bulkError.hidden = true;
+      renderQueue();
+    }
+
+    bulkZone.addEventListener('click', function () { bulkFile.click(); });
+    bulkZone.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); bulkFile.click(); }
+    });
+    bulkFile.addEventListener('change', function () {
+      addFiles(bulkFile.files);
+      bulkFile.value = '';
+    });
+
+    ['dragenter', 'dragover'].forEach(function (n) {
+      bulkZone.addEventListener(n, function (ev) { ev.preventDefault(); bulkZone.classList.add('is-dragging'); });
+    });
+    ['dragleave', 'drop'].forEach(function (n) {
+      bulkZone.addEventListener(n, function (ev) { ev.preventDefault(); bulkZone.classList.remove('is-dragging'); });
+    });
+    bulkZone.addEventListener('drop', function (ev) {
+      if (ev.dataTransfer && ev.dataTransfer.files.length) { addFiles(ev.dataTransfer.files); }
+    });
+
+    // Sequential, one file per request. Sending them together would run into
+    // post_max_size and max_file_uploads on shared hosting, and a batch that
+    // overflows post_max_size arrives with an empty $_POST — no CSRF token,
+    // and an error that looks like an expired session.
+    function uploadNext(done) {
+      var item = null;
+      for (var i = 0; i < queue.length; i++) {
+        if (queue[i].state === 'queued') { item = queue[i]; break; }
+      }
+      if (!item) { done(); return; }
+
+      item.state = 'uploading';
+      renderQueue();
+
+      var body = new FormData();
+      body.append('csrf', CSRF);
+      body.append('set_id', bulk.dataset.set);
+      body.append('id', '');
+      body.append('remove_photo', '0');
+      body.append('code', item.code);
+      body.append('name', item.name);
+      body.append('photo', item.file, item.file.name);
+
+      fetch(bulk.dataset.endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'fetch', 'X-CSRF-Token': CSRF },
+        body: body
+      }).then(function (res) {
+        return res.json().catch(function () { return { ok: false, error: 'Unexpected reply.' }; })
+          .then(function (b) {
+            if (!res.ok || !b.ok) { throw new Error(b.error || 'That did not save.'); }
+          });
+      }).then(function () {
+        item.state = 'done';
+        renderQueue();
+        uploadNext(done);
+      }).catch(function (err) {
+        item.state = 'failed';
+        item.error = err.message;
+        renderQueue();
+        uploadNext(done);
+      });
+    }
+
+    bulkStart.addEventListener('click', function () {
+      if (running) { return; }
+      running = true;
+      bulkError.hidden = true;
+      renderQueue();
+
+      uploadNext(function () {
+        running = false;
+        var failed = queue.filter(function (x) { return x.state === 'failed'; });
+        if (!failed.length) {
+          window.location.reload();
+          return;
+        }
+        // Keep the drawer open so the failures stay readable and retryable.
+        failed.forEach(function (x) { x.state = 'queued'; });
+        bulkError.hidden = false;
+        bulkError.textContent = failed.length + (failed.length === 1 ? ' photograph' : ' photographs')
+          + ' could not be added. The rest are in. Press again to retry.';
+        renderQueue();
+      });
+    });
+
+    document.addEventListener('click', function (ev) {
+      if (!ev.target.closest('[data-bulk-open]')) { return; }
+      ev.preventDefault();
+      queue.forEach(function (x) { URL.revokeObjectURL(x.url); });
+      queue = [];
+      bulkError.hidden = true;
+      renderQueue();
+      openDialog(bulk);
     });
   }
 

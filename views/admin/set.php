@@ -28,6 +28,9 @@
                 data-del-submit="Delete set">
           <span class="msym" style="font-size:16px">edit</span>Edit set
         </button>
+        <button type="button" class="btn btn-secondary" data-bulk-open>
+          <span class="msym" style="font-size:16px">library_add</span>Bulk add
+        </button>
         <button type="button" class="btn btn-primary" data-drawer-open
                 data-id="" data-code="" data-name="" data-photo="" data-photo-name="">
           <span class="msym" style="font-size:16px">add</span>Add miniature
@@ -143,6 +146,44 @@
       <button type="submit" class="btn btn-primary">Save miniature</button>
     </div>
   </form>
+</div>
+
+<div class="drawer" id="bulk" hidden data-dialog
+     data-endpoint="<?= e(url('admin/miniature/save')) ?>"
+     data-set="<?= e((string)$set['id']) ?>">
+  <div class="drawer-panel">
+
+    <div class="drawer-head">
+      <div>
+        <div class="kicker">Bulk add</div>
+        <h3><?= e($set['code']) ?> <?= e($set['name']) ?></h3>
+      </div>
+      <button type="button" class="btn btn-ghost" data-dialog-close aria-label="Close">&times;</button>
+    </div>
+
+    <div class="plate dropzone" data-bulk-zone tabindex="0" role="button"
+         aria-label="Drop photographs, or click to choose">
+      <div class="dropzone-empty">
+        <span class="msym">add_photo_alternate</span>
+        <span>Drop photographs, or click to choose</span>
+      </div>
+    </div>
+    <input type="file" accept="image/*" multiple hidden data-bulk-file>
+
+    <p class="field-hint">
+      One miniature per photograph, added to the end of the set. Names are read from the
+      filenames where they can be — edit any of them before adding.
+    </p>
+
+    <ol class="bulk-list" data-bulk-list></ol>
+
+    <p class="form-error" data-bulk-error hidden></p>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" data-dialog-close>Cancel</button>
+      <button type="button" class="btn btn-primary" data-bulk-start disabled>Add miniatures</button>
+    </div>
+  </div>
 </div>
 
 <?php view('admin/_dialogs'); ?>
