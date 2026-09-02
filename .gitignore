@@ -1,5 +1,4 @@
 # Local credentials — never committed
-secrets.php
 config.php
 
 # Uploaded photographs (keep the four seed samples, ignore the rest)

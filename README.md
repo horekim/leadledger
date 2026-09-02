@@ -17,24 +17,9 @@ carries the **`ll_`** prefix, so it can share a database with anything else.
    Without the first one every route 404s.
 2. **Create or pick a database** in the one.com control panel, under
    *Web hosting → MySQL/Database*. Note the hostname, database name and user.
-3. **Create `secrets.php`** beside `index.php` on the server, filling in the
-   four connection values. It is gitignored and blocked from HTTP, so the
-   password never enters this repository.
-
-   ```php
-   <?php
-   return [
-       'db_host' => 'localhost',      // on one.com, not the external hostname
-       'db_name' => 'CHANGEME',       // name and user are usually the same string
-       'db_user' => 'CHANGEME',
-       'db_pass' => 'CHANGEME',
-
-       'db_prefix'   => 'll_',
-       'site_name'   => 'Lead Ledger',
-       'pretty_urls' => true,         // false if .htaccess cannot be used
-       'debug'       => false,
-   ];
-   ```
+3. **Copy `config.example.php` to `config.php`** on the server and fill in the
+   four connection values. `config.php` is gitignored and blocked from HTTP —
+   the password never enters this repository.
 4. **Open `https://yourdomain/install.php`** and press *Create tables and write
    the sample catalogue*. (Press *Create empty tables only* if you would rather
    start from nothing.)
@@ -51,8 +36,8 @@ Clean URLs need Apache to actually read this app's `.htaccess`. Two things stop
 that: the file never got uploaded (FTP clients and file managers routinely hide
 dotfiles), or a rewrite further up the tree claims the request first.
 
-Either way there is a way through that needs no rewriting at all — set this in
-`secrets.php`:
+Either way there is a way through that needs no rewriting at all — add this to
+`config.php`:
 
 ```php
 'pretty_urls' => false,

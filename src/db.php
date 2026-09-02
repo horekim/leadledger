@@ -5,31 +5,19 @@ function config(?string $key = null)
 {
     static $config = null;
     if ($config === null) {
-        $root = dirname(__DIR__);
-
-        // secrets.php is what this account's other sites call it. config.php is
-        // still honoured when secrets.php is absent, so an existing deployment
-        // does not go down the moment new code lands on it — rename the file on
-        // the server and this fallback stops being used.
-        $file = is_file($root . '/secrets.php')
-            ? $root . '/secrets.php'
-            : $root . '/config.php';
-
+        $file = dirname(__DIR__) . '/config.php';
         if (!is_file($file)) {
             http_response_code(500);
             header('Content-Type: text/plain; charset=utf-8');
             exit(
                 "Lead Ledger is not configured yet.\n\n" .
-                "Create secrets.php beside index.php, returning an array with:\n\n" .
-                "    db_host, db_name, db_user, db_pass, db_prefix,\n" .
-                "    site_name, pretty_urls, debug\n\n" .
-                "The README has the file to copy.\n"
+                "Copy config.example.php to config.php and fill in the four\n" .
+                "connection values from the one.com control panel, then reload.\n"
             );
         }
-
         $config = require $file;
         if (!is_array($config)) {
-            throw new RuntimeException(basename($file) . ' must return an array.');
+            throw new RuntimeException('config.php must return an array.');
         }
     }
     if ($key === null) {
@@ -74,7 +62,7 @@ function db(): PDO
 
 /**
  * Last-resort handler for a database that will not answer. Shows the real
- * reason when secrets.php has debug on, and points at the installer either way.
+ * reason when config.php has debug on, and points at the installer either way.
  */
 function db_unavailable(Throwable $ex): void
 {
@@ -92,7 +80,7 @@ function db_unavailable(Throwable $ex): void
     exit(
         "The archive is unavailable right now.\n\n" .
         "If you are setting this up: open install.php, which reports the real\n" .
-        "reason, or set 'debug' => true in secrets.php to see it here.\n"
+        "reason, or set 'debug' => true in config.php to see it here.\n"
     );
 }
 

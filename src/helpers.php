@@ -34,7 +34,7 @@ function asset(string $path = ''): string
  * A URL for a route.
  *
  * With pretty_urls on (the default) this needs mod_rewrite to fold everything
- * into index.php. Turn it off in secrets.php and routes address index.php
+ * into index.php. Turn it off in config.php and routes address index.php
  * directly instead — /leadledger/index.php/sign-in — which needs no rewriting
  * at all, and so cannot be intercepted by a WordPress .htaccess further up.
  */
