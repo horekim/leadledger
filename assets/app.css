@@ -346,6 +346,14 @@ tr.dragging { opacity: .45; }
   background: var(--color-bg); border-left: 2px solid var(--color-divider);
   box-shadow: var(--shadow-lg); padding: 22px 24px 40px;
 }
+
+/* Modal chrome is controls rather than copy, so it takes no selection — but
+   the fields inside it must stay selectable, or you cannot correct a typo
+   without retyping the lot. */
+.drawer-panel,
+.dialog { -webkit-user-select: none; user-select: none; }
+.drawer-panel .input,
+.dialog .input { -webkit-user-select: text; user-select: text; }
 .drawer-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: var(--space-4); }
 .drawer-head h3 { margin: 0; font-size: 22px; }
 .drawer-head .btn-ghost { margin-left: auto; }
