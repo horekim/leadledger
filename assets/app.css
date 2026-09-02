@@ -585,6 +585,13 @@ tr.dragging { opacity: .45; }
     margin-left: 0; font-size: 10.5px; letter-spacing: .08em;
   }
 
+  /* The density switcher goes: the grid is a fixed single column here, so the
+     only thing it still changed was whether captions showed — and the contact
+     sheet's hidden captions would have been unescapable once the control was
+     gone. Restore them with it. */
+  .density { display: none; }
+  .mini-grid[data-density="contact"] .mini-caption { display: flex; }
+
   .set-grid { grid-template-columns: 1fr; }
   .mini-grid[data-density] { grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 14px; }
   .drawer-panel { width: 100%; max-width: 100%; border-left: 0; padding: 18px 16px 40px; }
