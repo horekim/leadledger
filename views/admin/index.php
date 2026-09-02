@@ -5,10 +5,17 @@
 
   <main class="admin-main">
 
-    <div class="section-head">
+    <div class="section-head is-row">
       <div>
         <div class="kicker">Manage</div>
         <h2>All ranges</h2>
+      </div>
+      <div class="section-actions">
+        <button type="button" class="btn btn-primary" data-editor-open
+                data-kind="range" data-id="" data-name=""
+                data-title="New range" data-submit="Create range">
+          <span class="msym" style="font-size:16px">add</span>New range
+        </button>
       </div>
     </div>
 

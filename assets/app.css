@@ -119,8 +119,10 @@ a:hover { color: var(--color-accent-700); }
 }
 .range-toggle .msym { font-size: 22px; }
 .tog-close { display: none; }
-.range-section[open] .tog-open { display: none; }
-.range-section[open] .tog-close { display: block; }
+details[open] > summary .tog-open  { display: none; }
+details[open] > summary .tog-close { display: block; }
+.admin-rail:not(.is-collapsed) .tog-open  { display: none; }
+.admin-rail:not(.is-collapsed) .tog-close { display: block; }
 .range-head:hover .range-toggle { color: var(--color-accent-700); }
 .range-head:hover h3 { color: var(--color-accent-700); }
 /* Collapsed, a range is a single row in a list — it should not keep the
@@ -323,8 +325,6 @@ a:hover { color: var(--color-accent-700); }
   display: flex; flex-direction: column;
   -webkit-user-select: none; user-select: none;
 }
-.admin-rail-top { padding: 0 18px 16px; }
-.admin-rail-top .btn { margin-top: 0; }
 .admin-rail a {
   display: flex; align-items: baseline; gap: 10px;
   padding: 8px 18px; text-decoration: none; color: inherit;
@@ -337,6 +337,9 @@ a:hover { color: var(--color-accent-700); }
   color: color-mix(in srgb, var(--color-text) 45%, transparent);
 }
 .admin-rail a.is-active .admin-rail-count { color: var(--color-accent-700); }
+
+/* Above the breakpoint the toggle is not a control — the list is the rail. */
+.admin-disc { display: none; }
 .admin-rail a:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); color: inherit; }
 .admin-rail a.is-active {
   background: var(--color-accent-100); color: var(--color-accent-800);
@@ -527,17 +530,41 @@ tr.dragging { opacity: .45; }
   .stat-row { gap: 20px; text-align: left; }
   .filter-bar { position: static; }
   .admin-shell { display: block; }
+  /* One row that says where you are, opening into a full-width list. It
+     replaces a horizontal scroller that could hide the active range entirely. */
   .admin-rail {
-    position: static; height: auto;
-    display: flex; flex-direction: row; overflow-x: auto;
+    position: static; height: auto; display: block; overflow: visible;
     border-right: 0; border-bottom: 2px solid var(--color-divider); padding: 0;
   }
-  .admin-rail a { white-space: nowrap; }
-  .admin-rail-top { padding: 8px 12px; flex: none; }
-  .admin-rail-top .btn { white-space: nowrap; }
+  .admin-disc {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    padding: 11px 16px; cursor: pointer;
+    background: transparent; border: 0; color: inherit; text-align: left;
+  }
+  .admin-disc:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+  .disc-label { font-family: var(--font-heading); font-weight: 400; font-size: 14px; flex: none; }
+  .disc-current {
+    flex: 1; min-width: 0; text-align: right;
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-text) 50%, transparent);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  /* The current range names itself only while the list is shut. */
+  .admin-rail:not(.is-collapsed) .disc-current { display: none; }
+  .admin-rail.is-collapsed .admin-rail-list { display: none; }
+
+  .admin-rail-list { border-top: 2px solid var(--color-divider); }
+  .admin-rail-list a { padding: 10px 16px; }
+  .admin-rail-list a + a {
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+  }
   .admin-main { padding: 20px 16px 60px; }
   .section-head { flex-direction: column; align-items: flex-start; gap: 12px; }
   .section-head h2 { font-size: 26px; }
+  /* A head carrying one short title and one button has no need to stack. */
+  .section-head.is-row { flex-direction: row; align-items: center; gap: 12px; }
+  .section-head.is-row h2 { font-size: 22px; }
+  .section-head.is-row .section-actions { flex: none; }
   .auth-shell { display: block; }
   .auth-form { padding: 32px 16px 40px; max-width: none; }
   .auth-form h1 { font-size: 34px; }

@@ -135,6 +135,37 @@
   accordionMemory($$('.rail-range'), 'll.rail.open', false);
   accordionMemory($$('.range-section'), 'll.index.open', true);
 
+  /* ── The admin menu is a disclosure only on a narrow screen ────────────── */
+
+  (function rangeMenu() {
+    var rail = $('.admin-rail');
+    var disc = rail && $('.admin-disc', rail);
+    if (!rail || !disc) { return; }
+
+    var list = $('.admin-rail-list', rail);
+
+    function setCollapsed(on) {
+      rail.classList.toggle('is-collapsed', on);
+      disc.setAttribute('aria-expanded', on ? 'false' : 'true');
+    }
+
+    // Collapsed to start on a narrow screen only. Above the breakpoint the
+    // class is meaningless — the stylesheet ignores it and shows the rail —
+    // so a stale state can never leave the menu empty.
+    setCollapsed(window.innerWidth <= 900);
+
+    disc.addEventListener('click', function () {
+      setCollapsed(!rail.classList.contains('is-collapsed'));
+    });
+
+    if (list) {
+      // Following a link closes it, so the next page does not flash it open.
+      list.addEventListener('click', function (ev) {
+        if (ev.target.closest('a') && window.innerWidth <= 900) { setCollapsed(true); }
+      });
+    }
+  }());
+
   /* ── Dialogs and the drawer ────────────────────────────────────────────── */
 
   var openStack = [];
