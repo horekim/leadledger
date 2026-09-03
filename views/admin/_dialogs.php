@@ -8,16 +8,6 @@
 
     <div class="dialog-title" data-editor-title>Edit range</div>
 
-    <?php /* Sets only — a range has no parent to move it to. */ ?>
-    <div class="field" data-editor-range-field hidden>
-      <label for="ed-range">Range</label>
-      <select class="input" id="ed-range" name="range_id" data-editor-range>
-        <?php foreach (repo_ranges() as $r): ?>
-          <option value="<?= e((string)$r['id']) ?>"><?= e($r['name']) ?></option>
-        <?php endforeach; ?>
-      </select>
-    </div>
-
     <div class="field" data-editor-code-field hidden>
       <label for="ed-code">Code</label>
       <input class="input" id="ed-code" name="code" data-editor-code>
@@ -26,6 +16,16 @@
     <div class="field">
       <label for="ed-name">Name</label>
       <input class="input" id="ed-name" name="name" data-editor-name required>
+    </div>
+
+    <?php /* Sets only — a range has no parent to move it to. */ ?>
+    <div class="field" data-editor-range-field hidden>
+      <label for="ed-range">Range</label>
+      <select class="input" id="ed-range" name="range_id" data-editor-range>
+        <?php foreach (repo_ranges() as $r): ?>
+          <option value="<?= e((string)$r['id']) ?>"><?= e($r['name']) ?></option>
+        <?php endforeach; ?>
+      </select>
     </div>
 
     <div class="dialog-danger" data-editor-danger hidden>
