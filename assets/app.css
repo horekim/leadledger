@@ -338,9 +338,12 @@ details[open] > summary .tog-close { display: block; }
   background: color-mix(in srgb, var(--color-neutral-900) 45%, transparent);
   color: color-mix(in srgb, var(--color-bg) 70%, transparent);
 }
+/* Hunting: the square outlines itself in accent and the crosshair takes the
+   same red, rather than filling in the way the owned tick does. The scrim
+   stays, so the glyph reads over a pale photograph as well as a dark one. */
 .want[aria-pressed="true"],
 .want.is-static {
-  border-color: var(--color-accent); background: var(--color-accent); color: var(--color-bg);
+  border-color: var(--color-accent); color: var(--color-accent);
 }
 /* Read-only, a wanted miniature is never also owned, so no tick sits above
    the badge — it takes the top slot rather than leaving a gap. */
