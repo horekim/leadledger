@@ -135,6 +135,7 @@ details[open] > summary .tog-open  { display: none; }
 details[open] > summary .tog-close { display: block; }
 .admin-rail:not(.is-collapsed) .tog-open  { display: none; }
 .admin-rail:not(.is-collapsed) .tog-close { display: block; }
+.range-head:hover { background: var(--color-surface); }
 .range-head:hover .range-toggle { color: var(--color-accent-700); }
 .range-head:hover h3 { color: var(--color-accent-700); }
 /* Collapsed, a range is a single row in a list — it should not keep the
