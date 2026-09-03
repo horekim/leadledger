@@ -105,7 +105,7 @@ a:hover { color: var(--color-accent-700); }
   font-family: var(--font-heading); font-weight: 400;
   font-size: 16px; letter-spacing: .14em; text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
-  margin: 0 0 20px;
+  margin: 0 0 28px;
 }
 /* A rule divides one category from the next. The first needs none — the
    filter bar's rule already sits above it. */
@@ -601,7 +601,7 @@ tr.dragging { opacity: .45; }
   /* The range title and its toggle take the full width; the two facts drop
      below on one line, set counts left and the owned ratio right. */
   .category + .category { margin-top: 32px; }
-  .category-head { font-size: 15px; margin-bottom: 16px; }
+  .category-head { font-size: 15px; margin-bottom: 22px; }
   .category + .category .category-head { padding-top: 9px; }
   .filter-bar.is-bare { margin-bottom: 9px; }
   .range-head { flex-wrap: wrap; align-items: center; gap: 6px 12px; }
