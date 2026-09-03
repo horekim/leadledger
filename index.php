@@ -277,17 +277,24 @@ if (($seg[0] ?? '') === 'admin') {
                 flash('A set needs a code.');
                 back_to('admin');
             }
+            $before  = $id > 0 ? repo_set($id) : null;
             $rangeId = (int)($_POST['range_id'] ?? 0);
+
+            // Never move a set on a missing value — an absent range means the
+            // form did not offer one, not that it belongs in the first range.
+            if ($rangeId === 0 && $before) {
+                $rangeId = (int)$before['range_id'];
+            }
+            if (!repo_range($rangeId)) {
+                flash('That range no longer exists.');
+                back_to('admin');
+            }
 
             try {
                 if ($id > 0) {
-                    repo_update_set($id, $code, $name);
-                    flash('Set saved.');
+                    repo_update_set($id, $rangeId, $code, $name);
+                    flash($before && (int)$before['range_id'] !== $rangeId ? 'Set moved.' : 'Set saved.');
                 } else {
-                    if (!repo_range($rangeId)) {
-                        flash('That range no longer exists.');
-                        back_to('admin');
-                    }
                     repo_create_set($rangeId, $code, $name);
                     flash('Set created.');
                 }
@@ -295,6 +302,13 @@ if (($seg[0] ?? '') === 'admin') {
                 // Codes may repeat within a range, so nothing here is expected
                 // to collide — report it rather than swallowing it.
                 flash(config('debug') ? $ex->getMessage() : 'That set could not be saved.');
+                back_to('admin');
+            }
+
+            // A moved set is no longer on the page you edited it from, so go
+            // where it now lives rather than back to a list without it.
+            if ($before && (int)$before['range_id'] !== $rangeId) {
+                redirect('admin/ranges/' . $rangeId);
             }
             back_to('admin');
         }

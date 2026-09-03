@@ -5,9 +5,18 @@
     <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
     <input type="hidden" name="kind" value="range" data-editor-kind>
     <input type="hidden" name="id" value="" data-editor-id>
-    <input type="hidden" name="range_id" value="" data-editor-range>
 
     <div class="dialog-title" data-editor-title>Edit range</div>
+
+    <?php /* Sets only — a range has no parent to move it to. */ ?>
+    <div class="field" data-editor-range-field hidden>
+      <label for="ed-range">Range</label>
+      <select class="input" id="ed-range" name="range_id" data-editor-range>
+        <?php foreach (repo_ranges() as $r): ?>
+          <option value="<?= e((string)$r['id']) ?>"><?= e($r['name']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
 
     <div class="field" data-editor-code-field hidden>
       <label for="ed-code">Code</label>

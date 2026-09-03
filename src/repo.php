@@ -250,20 +250,27 @@ function repo_create_set(int $rangeId, string $code, string $name): int
     return (int)db()->lastInsertId();
 }
 
-function repo_update_set(int $id, string $code, string $name): void
+/** Moving a set to another range carries its sets, photographs and ticks. */
+function repo_update_set(int $id, int $rangeId, string $code, string $name): void
 {
     $set = repo_set($id);
     if (!$set) {
         return;
     }
-    $rangeId = (int)$set['range_id'];
 
-    // Keep the existing slug when the code has not changed, so live URLs hold.
-    $slug = strcasecmp($set['code'], $code) === 0
-        ? $set['slug']
-        : repo_unique_set_slug($rangeId, $code, $id);
+    $moved   = (int)$set['range_id'] !== $rangeId;
+    $recoded = strcasecmp($set['code'], $code) !== 0;
 
-    q('UPDATE ' . tbl('sets') . ' SET code = ?, slug = ?, name = ? WHERE id = ?', [$code, $slug, $name, $id]);
+    // Slugs are unique within a range, so a move has to re-check even when the
+    // code is untouched. Otherwise the slug is kept, so live URLs hold.
+    $slug = ($moved || $recoded)
+        ? repo_unique_set_slug($rangeId, $code, $id)
+        : $set['slug'];
+
+    q(
+        'UPDATE ' . tbl('sets') . ' SET range_id = ?, code = ?, slug = ?, name = ? WHERE id = ?',
+        [$rangeId, $code, $slug, $name, $id]
+    );
 }
 
 function repo_delete_set(int $id): void

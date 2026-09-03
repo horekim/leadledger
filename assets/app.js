@@ -215,9 +215,17 @@
 
   function fillEditor(d) {
     var isSet = d.kind === 'set';
-    $('[data-editor-kind]', editor).value  = d.kind;
-    $('[data-editor-id]', editor).value    = d.id || '';
-    $('[data-editor-range]', editor).value = d.range || '';
+    $('[data-editor-kind]', editor).value = d.kind;
+    $('[data-editor-id]', editor).value   = d.id || '';
+
+    // The range picker is how a set is moved; a range has no parent.
+    var rangeField  = $('[data-editor-range-field]', editor);
+    var rangeSelect = $('[data-editor-range]', editor);
+    // Disabled controls do not submit, so a range edit sends no range_id and
+    // a set whose trigger carried none keeps whatever range it already has.
+    rangeField.hidden = !isSet;
+    rangeSelect.disabled = !isSet || !d.range;
+    if (isSet && d.range) { rangeSelect.value = d.range; }
     $('[data-editor-title]', editor).textContent = d.title;
     $('[data-editor-submit]', editor).textContent = d.submit;
 
