@@ -147,9 +147,14 @@ details[open] > summary .tog-open  { display: none; }
 details[open] > summary .tog-close { display: block; }
 .admin-rail:not(.is-collapsed) .tog-open  { display: none; }
 .admin-rail:not(.is-collapsed) .tog-close { display: block; }
-.range-head:hover { background: var(--color-surface); }
-.range-head:hover .range-toggle { color: var(--color-accent-700); }
-.range-head:hover h3 { color: var(--color-accent-700); }
+/* Only where there is a pointer to hover with. On a touch screen :hover
+   sticks to whatever was tapped last, so opening a range left it greyed
+   until something else was touched. */
+@media (hover: hover) {
+  .range-head:hover { background: var(--color-surface); }
+  .range-head:hover .range-toggle { color: var(--color-accent-700); }
+  .range-head:hover h3 { color: var(--color-accent-700); }
+}
 /* Collapsed, a range is a single row in a list — it should not keep the
    spacing that separates an expanded grid from the next range. Rows stack
    flush, each band running from the rule above it to its own; the head's
