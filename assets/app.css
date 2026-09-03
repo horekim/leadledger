@@ -112,7 +112,14 @@ a:hover { color: var(--color-accent-700); }
 }
 
 /* — the index's range sections, an accordion on <details> — */
-.range-section { margin-bottom: 44px; }
+/* The whole accordion is navigation — a row that opens and closes, and a
+   grid of links — so dragging across it should select nothing rather than
+   leave a title highlighted. The archive's own copy stays selectable; this
+   is the same call the rails make. */
+.range-section {
+  margin-bottom: 44px;
+  -webkit-user-select: none; user-select: none;
+}
 /* The row's spacing is padding, not margin, so the hover fills the whole
    band from the rule above to its own rule rather than a strip around the
    text. Equal top and bottom, so title and toggle sit centred between the
@@ -123,9 +130,6 @@ a:hover { color: var(--color-accent-700); }
   padding: 13px 16px; margin-bottom: 18px;
   border-bottom: 2px solid var(--color-divider);
   cursor: pointer; list-style: none;
-  /* A row that opens and closes on click is a control, not copy — opening
-     one twice should not leave its title highlighted. */
-  -webkit-user-select: none; user-select: none;
 }
 .range-head::-webkit-details-marker { display: none; }
 .range-head h3 { font-size: 24px; margin: 0; }
