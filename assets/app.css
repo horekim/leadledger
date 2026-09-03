@@ -192,10 +192,6 @@ details[open] > summary .tog-close { display: block; }
   overflow: auto; padding: 20px 0 40px;
   -webkit-user-select: none; user-select: none;
 }
-.rail-label {
-  padding: 0 20px 14px; font-size: 10px; letter-spacing: .08em;
-  text-transform: uppercase; color: color-mix(in srgb, var(--color-text) 50%, transparent);
-}
 .rail-range { border-top: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent); }
 .rail-range > summary {
   display: grid; grid-template-columns: 14px 1fr auto; gap: 9px; align-items: center;

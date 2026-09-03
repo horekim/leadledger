@@ -51,7 +51,6 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
 <div class="shell">
 
   <nav class="rail" aria-label="Ranges">
-    <div class="rail-label">Ranges</div>
     <?php foreach (repo_by_category($catalogue) as $group): ?>
       <div class="rail-group"><?= e($group['label']) ?></div>
       <?php foreach ($group['ranges'] as $r): ?>
