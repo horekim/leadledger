@@ -100,7 +100,7 @@ a:hover { color: var(--color-accent-700); }
 .breadcrumb .tail { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
 
 /* — the archive's top level — */
-.category + .category { margin-top: 46px; }
+.category + .category { margin-top: 52px; }
 .category-head {
   font-family: var(--font-heading); font-weight: 400;
   font-size: 16px; letter-spacing: .14em; text-transform: uppercase;
@@ -110,7 +110,7 @@ a:hover { color: var(--color-accent-700); }
 /* A rule divides one category from the next. The first needs none — the
    filter bar's rule already sits above it. */
 .category + .category .category-head {
-  padding-top: 22px; border-top: 2px solid var(--color-divider);
+  padding-top: 10px; border-top: 2px solid var(--color-divider);
 }
 
 /* — the index's range sections, an accordion on <details> — */
@@ -598,7 +598,7 @@ tr.dragging { opacity: .45; }
      below on one line, set counts left and the owned ratio right. */
   .category + .category { margin-top: 32px; }
   .category-head { font-size: 15px; margin-bottom: 16px; }
-  .category + .category .category-head { padding-top: 18px; }
+  .category + .category .category-head { padding-top: 9px; }
   .range-head { flex-wrap: wrap; align-items: center; gap: 6px 12px; }
   /* basis 0, so a long name wraps inside the heading instead of pushing
      itself onto a line below the toggle. */
