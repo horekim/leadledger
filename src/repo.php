@@ -195,8 +195,8 @@ function repo_miniatures(int $setId): array
     foreach ($rows as &$row) {
         $row['id']     = (int)$row['id'];
         $row['owned']  = (bool)$row['owned'];
-        // Wanting something you own is meaningless, so the flag is masked
-        // rather than deleted — un-ticking owned restores the hunt.
+        // Ticking owned deletes the wanted row, so these should never both be
+        // set. Kept as a guard: an owned miniature never reads as wanted.
         $row['wanted'] = !$row['owned'] && (bool)$row['wanted'];
     }
     unset($row);

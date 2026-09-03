@@ -150,6 +150,12 @@ if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_
 
     repo_set_owned($miniId, $wanted);
 
+    // Owning something ends the hunt — the wanted row goes rather than lying
+    // dormant. Un-ticking later does not resurrect it.
+    if ($wanted) {
+        repo_set_wanted($miniId, false);
+    }
+
     if (is_json_request()) {
         $setId = (int)$mini['set_id'];
         json_out([

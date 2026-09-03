@@ -259,6 +259,28 @@ try {
         step('todo', $want . ' will be created, so miniatures can be marked as wanted.');
     }
 
+    // Rows left over from when owning only masked a want, rather than clearing it.
+    if ($wantExists) {
+        $stale = (int)q(
+            'SELECT COUNT(*) AS n FROM `' . $want . '` w
+               JOIN `' . $prefix . 'ownership` o ON o.miniature_id = w.miniature_id'
+        )->fetch()['n'];
+
+        if ($stale === 0) {
+            step('skip', 'No wanted rows against miniatures already owned.');
+        } elseif ($ran) {
+            db()->exec(
+                'DELETE w FROM `' . $want . '` w
+                   JOIN `' . $prefix . 'ownership` o ON o.miniature_id = w.miniature_id'
+            );
+            step('good', $stale . ' wanted ' . plural($stale, 'row', 'rows')
+                . ' against owned miniatures cleared — owning now ends the hunt.');
+        } else {
+            step('todo', $stale . ' wanted ' . plural($stale, 'row', 'rows')
+                . ' against already-owned miniatures will be cleared.');
+        }
+    }
+
     /* ── ownership: one collection for the archive, not one per user ── */
 
     if (column($own, 'user_id') === null) {

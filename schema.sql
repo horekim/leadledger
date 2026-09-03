@@ -64,9 +64,8 @@ CREATE TABLE IF NOT EXISTS ll_miniatures (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- The hunt: miniatures being actively looked for. Same shape and same rules as
--- ownership — one list for the archive, admin-only to change. Only meaningful
--- while a miniature is unowned; the row is kept when it is owned, so
--- un-ticking restores the hunt rather than losing it.
+-- ownership — one list for the archive, admin-only to change. Ticking a
+-- miniature as owned deletes its row here: the hunt is over.
 CREATE TABLE IF NOT EXISTS ll_wanted (
   miniature_id INT UNSIGNED NOT NULL,
   created_at   DATETIME     NOT NULL,

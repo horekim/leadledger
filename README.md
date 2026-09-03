@@ -107,7 +107,8 @@ tells you when there is nothing left to do — delete it then.
 | `GET /admin` | All ranges, each with its sets |
 | `GET /admin/ranges/{id}` | One range's sets |
 | `GET /admin/sets/{id}` | A set's miniatures |
-| `POST /api/collection/{miniature}` | Toggle owned, admin only — idempotent, also accepts `PUT` / `DELETE` |
+| `POST /api/collection/{miniature}` | Toggle owned, admin only — idempotent, also accepts `PUT` / `DELETE`. Owning clears any wanted row |
+| `POST /api/wanted/{miniature}` | Toggle wanted, admin only — same shape |
 | `POST /admin/sets/{set}/reorder` | Persist a drag-reorder |
 
 Everything works without JavaScript — the ticks, filters, density switcher and
