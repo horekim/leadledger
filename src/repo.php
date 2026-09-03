@@ -21,7 +21,7 @@ function categories(): array
     return [
         'fantasy'    => 'Fantasy',
         'scifi'      => 'Sci-fi',
-        'specialist' => 'Specialist games',
+        'specialist' => 'Specialist Games',
     ];
 }
 
