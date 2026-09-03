@@ -100,14 +100,15 @@ a:hover { color: var(--color-accent-700); }
 .breadcrumb .tail { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
 
 /* — the archive's top level — */
-/* The label carries all its own spacing and draws no rule: 26px above, 18px
-   below, wherever it falls. Nothing on .category, so the head's own top
-   margin governs the gap between one category and the next. */
+/* The label carries all its own spacing and draws no rule: 26px of margin
+   above plus 16px of padding, 18px below, wherever it falls. Nothing on
+   .category, so the head's own spacing governs the gap between one category
+   and the next — and the padding, unlike the margin, always adds. */
 .category-head {
   font-family: var(--font-heading); font-weight: 400;
   font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
-  margin: 26px 0 18px;
+  padding-top: 16px; margin: 26px 0 18px;
 }
 
 /* — the index's range sections, an accordion on <details> — */
