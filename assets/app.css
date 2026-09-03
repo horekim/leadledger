@@ -99,6 +99,12 @@ a:hover { color: var(--color-accent-700); }
 .breadcrumb .sep { color: color-mix(in srgb, var(--color-text) 28%, transparent); }
 .breadcrumb .tail { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
 
+/* — the archive's top level — */
+.category + .category { margin-top: 56px; }
+.category-head {
+  font-size: 30px; margin: 0 0 20px;
+}
+
 /* — the index's range sections, an accordion on <details> — */
 .range-section { margin-bottom: 44px; }
 .range-head {
@@ -338,6 +344,18 @@ details[open] > summary .tog-close { display: block; }
 }
 .admin-rail a.is-active .admin-rail-count { color: var(--color-accent-700); }
 
+/* Category labels inside a menu — a heading for the rows beneath, not a row. */
+.rail-group {
+  padding: 14px 18px 6px;
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 45%, transparent);
+}
+.rail .rail-group { padding: 14px 20px 6px; }
+.admin-category { font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 45%, transparent);
+  margin: 0 0 16px; padding-top: 8px; }
+.admin-range + .admin-category { margin-top: 34px; }
+
 /* Above the breakpoint the toggle is not a control — the list is the rail. */
 .admin-disc { display: none; }
 .admin-rail a:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); color: inherit; }
@@ -570,6 +588,8 @@ tr.dragging { opacity: .45; }
   .auth-aside { border-left: 0; border-top: 2px solid var(--color-divider); padding: 32px 16px 44px; }
   /* The range title and its toggle take the full width; the two facts drop
      below on one line, set counts left and the owned ratio right. */
+  .category + .category { margin-top: 36px; }
+  .category-head { font-size: 24px; margin-bottom: 14px; }
   .range-head { flex-wrap: wrap; align-items: center; gap: 6px 12px; }
   /* basis 0, so a long name wraps inside the heading instead of pushing
      itself onto a line below the toggle. */

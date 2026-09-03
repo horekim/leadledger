@@ -15,14 +15,19 @@ CREATE TABLE IF NOT EXISTS ll_users (
   UNIQUE KEY uq_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- `category` is the top level of the archive. Its values are fixed in PHP
+-- (see categories() in src/repo.php) rather than in a table of their own, so
+-- there are only ever the handful the code knows about.
 CREATE TABLE IF NOT EXISTS ll_ranges (
   id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   name       VARCHAR(160) NOT NULL,
   slug       VARCHAR(160) NOT NULL,
+  category   VARCHAR(20)  NOT NULL DEFAULT 'fantasy',
   created_at DATETIME     NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uq_ranges_slug (slug),
-  KEY ix_ranges_name (name)
+  KEY ix_ranges_name (name),
+  KEY ix_ranges_category (category)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Two sets in the same range may carry the same code. The slug is what the

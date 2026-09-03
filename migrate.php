@@ -18,6 +18,7 @@ $prefix = (string)(config('db_prefix') ?? 'll_');
 $minis  = $prefix . 'miniatures';
 $sets   = $prefix . 'sets';
 $own    = $prefix . 'ownership';
+$ranges = $prefix . 'ranges';
 $steps  = [];
 $fatal  = null;
 $ran    = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
@@ -215,6 +216,21 @@ try {
     } else {
         step('skip', 'Codes may already repeat within a range.');
     }
+    /* ── ranges: a top-level category ── */
+
+    if (column($ranges, 'category') !== null) {
+        step('skip', 'Ranges already carry a category.');
+    } elseif ($ran) {
+        db()->exec(
+            'ALTER TABLE `' . $ranges . "` ADD COLUMN `category` VARCHAR(20) NOT NULL DEFAULT 'fantasy' AFTER `slug`"
+        );
+        db()->exec('ALTER TABLE `' . $ranges . '` ADD KEY `ix_ranges_category` (`category`)');
+        step('good', 'Ranges now carry a category. Every existing range starts as Fantasy — '
+            . 'move the science-fiction ones in the range editor.');
+    } else {
+        step('todo', 'Ranges will gain a category column, every existing range starting as Fantasy.');
+    }
+
     /* ── ownership: one collection for the archive, not one per user ── */
 
     if (column($own, 'user_id') === null) {
@@ -281,8 +297,9 @@ $blocked = array_filter($steps, static fn($s) => $s[0] === 'bad');
   <?php else: ?>
     <p class="page-blurb">
       Brings the tables in line with the current schema: a miniature's photograph becomes its one
-      required field, two sets in the same range become free to share a code, and ownership becomes
-      a single collection for the whole archive rather than one per account.
+      required field, two sets in the same range become free to share a code, ownership becomes
+      a single collection for the whole archive rather than one per account, and ranges gain a
+      top-level category.
     </p>
 
     <?php foreach ($steps as [$tone, $text]): ?>

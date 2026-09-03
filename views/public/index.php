@@ -35,7 +35,11 @@
     </div>
   <?php endif; ?>
 
-  <?php foreach ($catalogue as $range): ?>
+  <?php foreach (repo_by_category($catalogue) as $group): ?>
+    <section class="category">
+      <h2 class="category-head"><?= e($group['label']) ?></h2>
+
+      <?php foreach ($group['ranges'] as $range): ?>
     <details class="range-section" data-range="<?= e($range['slug']) ?>" open>
       <summary class="range-head">
         <span class="range-toggle" aria-hidden="true">
@@ -85,6 +89,8 @@
         </div>
       <?php endif; ?>
     </details>
+      <?php endforeach; ?>
+    </section>
   <?php endforeach; ?>
 
 </main>

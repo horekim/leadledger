@@ -39,12 +39,15 @@ if ($current === '' && isset($activeRangeId)) {
       <span class="admin-rail-count"><?= e(num(count($catalogue))) ?></span>
     </a>
 
-    <?php foreach ($catalogue as $r): ?>
-      <a class="<?= isset($activeRangeId) && (int)$r['id'] === (int)$activeRangeId ? 'is-active' : '' ?>"
-         href="<?= e(url('admin/ranges/' . (int)$r['id'])) ?>">
-        <span><?= e($r['name']) ?></span>
-        <span class="admin-rail-count"><?= e(num(count($r['sets']))) ?></span>
-      </a>
+    <?php foreach (repo_by_category($catalogue) as $group): ?>
+      <div class="rail-group"><?= e($group['label']) ?></div>
+      <?php foreach ($group['ranges'] as $r): ?>
+        <a class="<?= isset($activeRangeId) && (int)$r['id'] === (int)$activeRangeId ? 'is-active' : '' ?>"
+           href="<?= e(url('admin/ranges/' . (int)$r['id'])) ?>">
+          <span><?= e($r['name']) ?></span>
+          <span class="admin-rail-count"><?= e(num(count($r['sets']))) ?></span>
+        </a>
+      <?php endforeach; ?>
     <?php endforeach; ?>
   </div>
 </nav>

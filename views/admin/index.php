@@ -25,7 +25,10 @@
       </div>
     <?php endif; ?>
 
-    <?php foreach ($catalogue as $range): ?>
+    <?php foreach (repo_by_category($catalogue) as $group): ?>
+      <h3 class="admin-category"><?= e($group['label']) ?></h3>
+
+      <?php foreach ($group['ranges'] as $range): ?>
       <section class="admin-range">
         <div class="admin-range-head">
           <h3><a class="plain" href="<?= e(url('admin/ranges/' . (int)$range['id'])) ?>"><?= e($range['name']) ?></a></h3>
@@ -44,6 +47,7 @@
 
         <?php view('admin/_sets', ['range' => $range]); ?>
       </section>
+      <?php endforeach; ?>
     <?php endforeach; ?>
 
   </main>

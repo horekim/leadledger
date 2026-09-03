@@ -18,6 +18,16 @@
       <input class="input" id="ed-name" name="name" data-editor-name required>
     </div>
 
+    <?php /* Ranges only — the top level a range sits under. */ ?>
+    <div class="field" data-editor-category-field hidden>
+      <label for="ed-category">Category</label>
+      <select class="input" id="ed-category" name="category" data-editor-category>
+        <?php foreach (categories() as $key => $label): ?>
+          <option value="<?= e($key) ?>"><?= e($label) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+
     <?php /* Sets only — a range has no parent to move it to. */ ?>
     <div class="field" data-editor-range-field hidden>
       <label for="ed-range">Range</label>

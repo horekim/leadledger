@@ -251,10 +251,11 @@ if (($seg[0] ?? '') === 'admin') {
     if ($seg === ['admin', 'save'] && $method === 'POST') {
         csrf_guard();
 
-        $kind = (string)($_POST['kind'] ?? '');
-        $id   = (int)($_POST['id'] ?? 0);
-        $name = trim((string)($_POST['name'] ?? ''));
-        $code = trim((string)($_POST['code'] ?? ''));
+        $kind     = (string)($_POST['kind'] ?? '');
+        $id       = (int)($_POST['id'] ?? 0);
+        $name     = trim((string)($_POST['name'] ?? ''));
+        $code     = trim((string)($_POST['code'] ?? ''));
+        $category = (string)($_POST['category'] ?? '');
 
         if ($name === '') {
             flash('A name is required.');
@@ -263,11 +264,16 @@ if (($seg[0] ?? '') === 'admin') {
 
         if ($kind === 'range') {
             if ($id > 0) {
-                repo_update_range($id, $name);
+                // An absent category keeps the one the range already has.
+                $existing = repo_range($id);
+                if (!category_valid($category)) {
+                    $category = $existing ? (string)$existing['category'] : LL_DEFAULT_CATEGORY;
+                }
+                repo_update_range($id, $name, $category);
                 flash('Range saved.');
                 back_to('admin/ranges/' . $id);
             }
-            $newId = repo_create_range($name);
+            $newId = repo_create_range($name, $category);
             flash('Range created.');
             redirect('admin/ranges/' . $newId);
         }

@@ -44,7 +44,9 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
 
   <nav class="rail" aria-label="Ranges">
     <div class="rail-label">Ranges</div>
-    <?php foreach ($catalogue as $r): ?>
+    <?php foreach (repo_by_category($catalogue) as $group): ?>
+      <div class="rail-group"><?= e($group['label']) ?></div>
+      <?php foreach ($group['ranges'] as $r): ?>
       <details class="rail-range" data-range="<?= e($r['slug']) ?>" <?= $r['id'] === (int)$range['id'] ? 'open' : '' ?>>
         <summary>
           <span class="rail-caret msym" style="font-size:14px">chevron_right</span>
@@ -62,6 +64,7 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
           </a>
         <?php endforeach; ?>
       </details>
+      <?php endforeach; ?>
     <?php endforeach; ?>
   </nav>
 

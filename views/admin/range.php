@@ -20,6 +20,7 @@
         <button type="button" class="btn btn-secondary" data-editor-open
                 data-kind="range" data-id="<?= e((string)$range['id']) ?>"
                 data-name="<?= e($range['name']) ?>"
+                data-category="<?= e((string)$range['category']) ?>"
                 data-title="Edit range" data-submit="Save" data-deletable="1"
                 data-del-title="Delete <?= e($range['name']) ?>?"
                 data-del-body="This removes <?= e(num(count($range['sets']))) ?> <?= e(plural(count($range['sets']), 'set', 'sets')) ?> and <?= e(num($range['mini_count'])) ?> <?= e(plural($range['mini_count'], 'miniature', 'miniatures')) ?> from the catalogue, along with every record of them. It cannot be undone."

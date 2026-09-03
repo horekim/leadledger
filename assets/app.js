@@ -218,6 +218,13 @@
     $('[data-editor-kind]', editor).value = d.kind;
     $('[data-editor-id]', editor).value   = d.id || '';
 
+    // A range picks a category; a set picks a range. Neither sees the other's.
+    var catField  = $('[data-editor-category-field]', editor);
+    var catSelect = $('[data-editor-category]', editor);
+    catField.hidden = isSet;
+    catSelect.disabled = isSet;
+    if (!isSet && d.category) { catSelect.value = d.category; }
+
     // The range picker is how a set is moved; a range has no parent.
     var rangeField  = $('[data-editor-range-field]', editor);
     var rangeSelect = $('[data-editor-range]', editor);
@@ -268,6 +275,7 @@
         name: open.dataset.name,
         title: open.dataset.title,
         submit: open.dataset.submit,
+        category: open.dataset.category,
         deletable: open.dataset.deletable === '1',
         delTitle: open.dataset.delTitle,
         delBody: open.dataset.delBody,

@@ -6,6 +6,53 @@
  * so repo_catalogue() is a single aggregate query rather than a loop.
  */
 
+/** A range whose category is missing or unrecognised falls back to this. */
+const LL_DEFAULT_CATEGORY = 'fantasy';
+
+/**
+ * The top level of the archive, in the order it is shown.
+ *
+ * Deliberately code rather than a table: there are two of them, they change
+ * about never, and a table would need a screen of its own to manage. Adding a
+ * third is one line here plus a migration default.
+ */
+function categories(): array
+{
+    return [
+        'scifi'   => 'Sci-fi',
+        'fantasy' => 'Fantasy',
+    ];
+}
+
+function category_label(string $key): string
+{
+    return categories()[$key] ?? categories()[LL_DEFAULT_CATEGORY];
+}
+
+function category_valid(string $key): bool
+{
+    return isset(categories()[$key]);
+}
+
+/**
+ * Group a catalogue into its categories, in category order, dropping any that
+ * hold no ranges. Each group is ['key', 'label', 'ranges'].
+ */
+function repo_by_category(array $catalogue): array
+{
+    $groups = [];
+    foreach (categories() as $key => $label) {
+        $groups[$key] = ['key' => $key, 'label' => $label, 'ranges' => []];
+    }
+
+    foreach ($catalogue as $range) {
+        $key = category_valid((string)$range['category']) ? $range['category'] : LL_DEFAULT_CATEGORY;
+        $groups[$key]['ranges'][] = $range;
+    }
+
+    return array_values(array_filter($groups, static fn(array $g): bool => $g['ranges'] !== []));
+}
+
 /**
  * The whole catalogue: ranges alphabetical, sets natural-sorted by code,
  * each set carrying its miniature count and this user's owned count.
@@ -15,6 +62,7 @@ function repo_catalogue(): array
     $sql = 'SELECT r.id           AS range_id,
                    r.name         AS range_name,
                    r.slug         AS range_slug,
+                   r.category     AS range_category,
                    s.id           AS set_id,
                    s.code         AS set_code,
                    s.slug         AS set_slug,
@@ -25,7 +73,7 @@ function repo_catalogue(): array
          LEFT JOIN ' . tbl('sets') . ' s        ON s.range_id = r.id
          LEFT JOIN ' . tbl('miniatures') . ' m  ON m.set_id = s.id
          LEFT JOIN ' . tbl('ownership') . ' o   ON o.miniature_id = m.id
-          GROUP BY r.id, r.name, r.slug, s.id, s.code, s.slug, s.name
+          GROUP BY r.id, r.name, r.slug, r.category, s.id, s.code, s.slug, s.name
           ORDER BY r.name ASC, r.id ASC, s.code ASC, s.name ASC, s.id ASC';
 
     $rows = q($sql)->fetchAll();
@@ -38,6 +86,7 @@ function repo_catalogue(): array
                 'id'          => $rid,
                 'name'        => $row['range_name'],
                 'slug'        => $row['range_slug'],
+                'category'    => $row['range_category'],
                 'sets'        => [],
                 'mini_count'  => 0,
                 'owned_count' => 0,
@@ -86,19 +135,19 @@ function repo_totals(array $catalogue): array
 
 function repo_range_by_slug(string $slug): ?array
 {
-    $row = q('SELECT id, name, slug FROM ' . tbl('ranges') . ' WHERE slug = ?', [$slug])->fetch();
+    $row = q('SELECT id, name, slug, category FROM ' . tbl('ranges') . ' WHERE slug = ?', [$slug])->fetch();
     return $row ?: null;
 }
 
 function repo_range(int $id): ?array
 {
-    $row = q('SELECT id, name, slug FROM ' . tbl('ranges') . ' WHERE id = ?', [$id])->fetch();
+    $row = q('SELECT id, name, slug, category FROM ' . tbl('ranges') . ' WHERE id = ?', [$id])->fetch();
     return $row ?: null;
 }
 
 function repo_ranges(): array
 {
-    return q('SELECT id, name, slug FROM ' . tbl('ranges') . ' ORDER BY name ASC')->fetchAll();
+    return q('SELECT id, name, slug, category FROM ' . tbl('ranges') . ' ORDER BY name ASC')->fetchAll();
 }
 
 /**
@@ -196,20 +245,20 @@ function repo_unique_range_slug(string $name, ?int $ignoreId = null): string
     }
 }
 
-function repo_create_range(string $name): int
+function repo_create_range(string $name, string $category): int
 {
     q(
-        'INSERT INTO ' . tbl('ranges') . ' (name, slug, created_at) VALUES (?, ?, NOW())',
-        [$name, repo_unique_range_slug($name)]
+        'INSERT INTO ' . tbl('ranges') . ' (name, slug, category, created_at) VALUES (?, ?, ?, NOW())',
+        [$name, repo_unique_range_slug($name), category_valid($category) ? $category : LL_DEFAULT_CATEGORY]
     );
     return (int)db()->lastInsertId();
 }
 
-function repo_update_range(int $id, string $name): void
+function repo_update_range(int $id, string $name, string $category): void
 {
     q(
-        'UPDATE ' . tbl('ranges') . ' SET name = ?, slug = ? WHERE id = ?',
-        [$name, repo_unique_range_slug($name, $id), $id]
+        'UPDATE ' . tbl('ranges') . ' SET name = ?, slug = ?, category = ? WHERE id = ?',
+        [$name, repo_unique_range_slug($name, $id), category_valid($category) ? $category : LL_DEFAULT_CATEGORY, $id]
     );
 }
 
