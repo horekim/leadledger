@@ -147,9 +147,9 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
                 </button>
               </form>
 
-              <?php /* Wanting is only meaningful while unowned — owning
-                       something ends the hunt, so the control goes with it. */ ?>
-              <?php if (!$m['owned']): ?>
+              <?php /* Always rendered, hidden by CSS while the card is owned.
+                       Rendering it conditionally meant un-ticking had nothing
+                       to reveal, since the markup was never there. */ ?>
                 <form method="post" action="<?= e(url('api/wanted/' . $m['id'])) ?>" data-want>
                   <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                   <input type="hidden" name="wanted" value="<?= $m['wanted'] ? '0' : '1' ?>" data-wanted-field>
@@ -162,7 +162,6 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
                   </svg>
                   </button>
                 </form>
-              <?php endif; ?>
             <?php else: ?>
               <?php /* Read-only. The tick shows only where it means something —
                        an empty square nobody can press is an affordance that lies. */ ?>

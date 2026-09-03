@@ -337,6 +337,10 @@ details[open] > summary .tog-close { display: block; }
    the badge — it takes the top slot rather than leaving a gap. */
 .want.is-static { cursor: default; top: calc(var(--space-2) * 2); }
 
+/* Owning ends the hunt. Hidden here rather than by the hidden attribute,
+   which .mini-card form { display: contents } would outrank. */
+.mini-card.is-owned .want { display: none; }
+
 /* The at-a-glance signal in a dense grid. */
 .want-strip {
   position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;

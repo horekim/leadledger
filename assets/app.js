@@ -115,23 +115,17 @@
           ownedLine(body.owned_count, body.total);
 
           // Owning something ends the hunt: the server clears the wanted row,
-          // so the strip goes, the control goes, and the control comes back
-          // reset rather than still saying "stop looking".
-          var hunt = card.querySelector('form[data-want]');
+          // so the strip goes and the control resets. The card's is-owned
+          // class hides and reveals it — no toggling needed here.
           if (want) {
             strip(card, false);
-            if (hunt) {
-              hunt.hidden = true;
-              var f = $('[data-wanted-field]', hunt);
-              var b = $('.want', hunt);
-              if (f) { f.value = '1'; }
-              if (b) {
-                b.setAttribute('aria-pressed', 'false');
-                b.title = 'I am looking for this';
-              }
+            var f = $('[data-wanted-field]', card);
+            var b = $('.want', card);
+            if (f) { f.value = '1'; }
+            if (b) {
+              b.setAttribute('aria-pressed', 'false');
+              b.title = 'I am looking for this';
             }
-          } else if (hunt) {
-            hunt.hidden = false;
           }
         })
         .catch(function (err) {
