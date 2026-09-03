@@ -102,7 +102,10 @@ a:hover { color: var(--color-accent-700); }
 /* — the archive's top level — */
 .category + .category { margin-top: 56px; }
 .category-head {
-  font-size: 30px; margin: 0 0 20px;
+  font-family: var(--font-heading); font-weight: 400;
+  font-size: 16px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--color-accent);
+  margin: 0 0 16px;
 }
 
 /* — the index's range sections, an accordion on <details> — */
@@ -589,7 +592,7 @@ tr.dragging { opacity: .45; }
   /* The range title and its toggle take the full width; the two facts drop
      below on one line, set counts left and the owned ratio right. */
   .category + .category { margin-top: 36px; }
-  .category-head { font-size: 24px; margin-bottom: 14px; }
+  .category-head { font-size: 15px; margin-bottom: 12px; }
   .range-head { flex-wrap: wrap; align-items: center; gap: 6px 12px; }
   /* basis 0, so a long name wraps inside the heading instead of pushing
      itself onto a line below the toggle. */
