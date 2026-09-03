@@ -113,9 +113,13 @@ a:hover { color: var(--color-accent-700); }
 
 /* — the index's range sections, an accordion on <details> — */
 .range-section { margin-bottom: 44px; }
+/* The row's spacing is padding, not margin, so the hover fills the whole
+   band from the rule above to its own rule rather than a strip around the
+   text. Equal top and bottom, so title and toggle sit centred between the
+   two rules. */
 .range-head {
   display: flex; align-items: baseline; gap: 12px;
-  padding-bottom: 9px; margin-bottom: 18px;
+  padding: 13px 0; margin-bottom: 18px;
   border-bottom: 2px solid var(--color-divider);
   cursor: pointer; list-style: none;
 }
@@ -139,8 +143,10 @@ details[open] > summary .tog-close { display: block; }
 .range-head:hover .range-toggle { color: var(--color-accent-700); }
 .range-head:hover h3 { color: var(--color-accent-700); }
 /* Collapsed, a range is a single row in a list — it should not keep the
-   spacing that separates an expanded grid from the next range. */
-.range-section:not([open]) { margin-bottom: 18px; }
+   spacing that separates an expanded grid from the next range. Rows stack
+   flush, each band running from the rule above it to its own; the head's
+   padding supplies the rhythm that this margin used to. */
+.range-section:not([open]) { margin-bottom: 0; }
 .range-section:not([open]) .range-head { margin-bottom: 0; }
 
 .range-facts { display: contents; }
