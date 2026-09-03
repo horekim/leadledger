@@ -100,17 +100,14 @@ a:hover { color: var(--color-accent-700); }
 .breadcrumb .tail { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
 
 /* — the archive's top level — */
-.category + .category { margin-top: 52px; }
+/* The label carries all its own spacing and draws no rule: 26px above, 18px
+   below, wherever it falls. Nothing on .category, so the head's own top
+   margin governs the gap between one category and the next. */
 .category-head {
   font-family: var(--font-heading); font-weight: 400;
-  font-size: 16px; letter-spacing: .14em; text-transform: uppercase;
+  font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
-  margin: 0 0 28px;
-}
-/* A rule divides one category from the next. The first needs none — the
-   filter bar's rule already sits above it. */
-.category + .category .category-head {
-  padding-top: 10px; border-top: 2px solid var(--color-divider);
+  margin: 26px 0 18px;
 }
 
 /* — the index's range sections, an accordion on <details> — */
@@ -229,9 +226,9 @@ details[open] > summary .tog-close { display: block; }
 
 /* ── 3. Filter bar ── */
 
-/* On the index the bar holds no controls — it is there for its rule, and the
-   first category label sits under it exactly as the later ones sit under
-   theirs. */
+/* On the index the bar holds no controls — it is there for its rule. The
+   first category label brings its own 26px above, which wins over this
+   margin; the 10px only shows on an empty archive, above the empty state. */
 .filter-bar.is-bare { margin-bottom: 10px; }
 .filter-bar {
   position: sticky; top: 53px; z-index: 20;
@@ -635,9 +632,6 @@ tr.dragging { opacity: .45; }
   .auth-aside { border-left: 0; border-top: 2px solid var(--color-divider); padding: 32px 16px 44px; }
   /* The range title and its toggle take the full width; the two facts drop
      below on one line, set counts left and the owned ratio right. */
-  .category + .category { margin-top: 32px; }
-  .category-head { font-size: 15px; margin-bottom: 22px; }
-  .category + .category .category-head { padding-top: 9px; }
   .filter-bar.is-bare { margin-bottom: 9px; }
   .range-head { flex-wrap: wrap; align-items: center; gap: 6px 12px; }
   /* basis 0, so a long name wraps inside the heading instead of pushing
