@@ -91,6 +91,40 @@ function not_found(): void
 
 /* — routing — */
 
+// POST|PUT|DELETE /api/wanted/{miniatureId}   idempotent wanted toggle
+if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'wanted' && ctype_digit($seg[2])) {
+    if (!in_array($method, ['POST', 'PUT', 'DELETE'], true)) {
+        json_fail('Use POST, PUT or DELETE.', 405);
+    }
+    csrf_guard();
+    require_admin(); // one hunt, and only an admin edits it
+
+    $miniId = (int)$seg[2];
+    $mini   = repo_miniature($miniId);
+    if (!$mini) {
+        json_fail('No such miniature.', 404);
+    }
+
+    if ($method === 'PUT') {
+        $wanted = true;
+    } elseif ($method === 'DELETE') {
+        $wanted = false;
+    } else {
+        $wanted = (string)($_POST['wanted'] ?? json_body()['wanted'] ?? '1') === '1';
+    }
+
+    repo_set_wanted($miniId, $wanted);
+
+    if (is_json_request()) {
+        json_out([
+            'ok'           => true,
+            'wanted'       => $wanted,
+            'wanted_count' => repo_wanted_count_in_set((int)$mini['set_id']),
+        ]);
+    }
+    back_to();
+}
+
 // POST|PUT|DELETE /api/collection/{miniatureId}   idempotent owned toggle
 if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_digit($seg[2])) {
     if (!in_array($method, ['POST', 'PUT', 'DELETE'], true)) {
@@ -119,10 +153,11 @@ if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_
     if (is_json_request()) {
         $setId = (int)$mini['set_id'];
         json_out([
-            'ok'          => true,
-            'owned'       => $wanted,
-            'owned_count' => repo_owned_count_in_set($setId),
-            'total'       => repo_count_in_set($setId),
+            'ok'           => true,
+            'owned'        => $wanted,
+            'owned_count'  => repo_owned_count_in_set($setId),
+            'wanted_count' => repo_wanted_count_in_set($setId),
+            'total'        => repo_count_in_set($setId),
         ]);
     }
     back_to();
@@ -444,7 +479,7 @@ if (count($seg) === 2) {
     }
 
     $filter = $_GET['show'] ?? 'all';
-    if (!in_array($filter, ['all', 'owned', 'missing'], true)) {
+    if (!in_array($filter, ['all', 'owned', 'missing', 'wanted'], true)) {
         $filter = 'all';
     }
 

@@ -73,6 +73,23 @@
 
   /* ── Owned ticks — optimistic, no confirmation, no toast ───────────────── */
 
+  /* Add or remove the WANTED bar across the foot of a card's plate. */
+  function strip(card, on) {
+    var plate = card && $('.mini-plate', card);
+    if (!plate) { return; }
+    var bar = $('.want-strip', plate);
+
+    if (on && !bar) {
+      bar = document.createElement('span');
+      bar.className = 'want-strip';
+      bar.setAttribute('aria-hidden', 'true');
+      bar.textContent = 'Wanted';
+      plate.appendChild(bar);
+    } else if (!on && bar) {
+      bar.parentNode.removeChild(bar);
+    }
+  }
+
   function ownedLine(count, total) {
     var line = $('.page-head .count-line');
     if (line) { line.textContent = count + ' of ' + total + ' owned'; }
@@ -94,11 +111,39 @@
       if (tick) { tick.setAttribute('aria-pressed', want ? 'true' : 'false'); }
 
       post(form.action, { owned: want ? '1' : '0' })
-        .then(function (body) { ownedLine(body.owned_count, body.total); })
+        .then(function (body) {
+          ownedLine(body.owned_count, body.total);
+          // Owning something ends the hunt, so its control goes with it.
+          var hunt = card.querySelector('form[data-want]');
+          if (hunt) { hunt.hidden = want; }
+        })
         .catch(function (err) {
           card.classList.toggle('is-owned', !want);
           field.value = want ? '1' : '0';
           if (tick) { tick.setAttribute('aria-pressed', want ? 'false' : 'true'); }
+          window.alert(err.message);
+        });
+      return;
+    }
+
+    // The hunt — the same optimistic flip as the tick.
+    if (form.matches('form[data-want]')) {
+      ev.preventDefault();
+      var wcard  = form.closest('.mini-card');
+      var wfield = $('[data-wanted-field]', form);
+      var wbtn   = $('.want', form);
+      var hunted = wfield.value === '1';
+
+      wfield.value = hunted ? '0' : '1';
+      wbtn.setAttribute('aria-pressed', hunted ? 'true' : 'false');
+      wbtn.title = hunted ? 'Stop looking for this' : 'I am looking for this';
+      strip(wcard, hunted);
+
+      post(form.action, { wanted: hunted ? '1' : '0' })
+        .catch(function (err) {
+          wfield.value = hunted ? '1' : '0';
+          wbtn.setAttribute('aria-pressed', hunted ? 'false' : 'true');
+          strip(wcard, !hunted);
           window.alert(err.message);
         });
     }

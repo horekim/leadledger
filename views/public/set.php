@@ -13,9 +13,17 @@ foreach ($miniatures as $m) {
     }
 }
 
+$wantedN = 0;
+foreach ($miniatures as $m) {
+    if ($m['wanted']) {
+        $wantedN++;
+    }
+}
+
 $shown = array_values(array_filter($miniatures, static function (array $m) use ($filter) {
     if ($filter === 'owned')   { return $m['owned']; }
     if ($filter === 'missing') { return !$m['owned']; }
+    if ($filter === 'wanted')  { return $m['wanted']; }
     return true;
 }));
 
@@ -87,6 +95,7 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
         <a class="<?= $filter === 'all' ? 'is-active' : '' ?>"     href="<?= e($qs(['show' => 'all'])) ?>">All</a>
         <a class="<?= $filter === 'owned' ? 'is-active' : '' ?>"   href="<?= e($qs(['show' => 'owned'])) ?>">Owned</a>
         <a class="<?= $filter === 'missing' ? 'is-active' : '' ?>" href="<?= e($qs(['show' => 'missing'])) ?>">Missing</a>
+        <a class="<?= $filter === 'wanted' ? 'is-active' : '' ?>"  href="<?= e($qs(['show' => 'wanted'])) ?>">Wanted</a>
       </div>
 
       <span class="result-count">Showing <?= e(num(count($shown))) ?> of <?= e(num($total)) ?></span>
@@ -103,6 +112,9 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
         <?php if ($total === 0): ?>
           <strong>No miniatures in this set yet</strong>
           <span>The set is catalogued, but nothing has been photographed into it.</span>
+        <?php elseif ($filter === 'wanted'): ?>
+          <strong>Nothing on the hunt in this set</strong>
+          <span>Mark a miniature with the crosshair to start looking for it.</span>
         <?php else: ?>
           <strong>Nothing matches this filter</strong>
           <span>Switch back to All to see the rest of the set.</span>
@@ -124,6 +136,7 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
                 <button type="submit" class="plate mini-plate" aria-label="<?= e($label) ?>">
                   <span class="mini-photo<?= $photo ? '' : ' is-blank' ?>"
                         <?= $photo ? 'style="background-image:url(\'' . e($photo) . '\')"' : '' ?>></span>
+                  <?php if ($m['wanted']): ?><span class="want-strip" aria-hidden="true">Wanted</span><?php endif; ?>
                 </button>
                 <button type="submit" class="tick" aria-pressed="<?= $m['owned'] ? 'true' : 'false' ?>"
                         aria-label="<?= e(($m['owned'] ? 'Mark not owned: ' : 'Mark owned: ') . $what) ?>">
@@ -133,18 +146,44 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
                   </svg>
                 </button>
               </form>
+
+              <?php /* Wanting is only meaningful while unowned — owning
+                       something ends the hunt, so the control goes with it. */ ?>
+              <?php if (!$m['owned']): ?>
+                <form method="post" action="<?= e(url('api/wanted/' . $m['id'])) ?>" data-want>
+                  <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                  <input type="hidden" name="wanted" value="<?= $m['wanted'] ? '0' : '1' ?>" data-wanted-field>
+                  <button type="submit" class="want" aria-pressed="<?= $m['wanted'] ? 'true' : 'false' ?>"
+                          title="<?= e($m['wanted'] ? 'Stop looking for this' : 'I am looking for this') ?>"
+                          aria-label="<?= e(($m['wanted'] ? 'Stop looking for: ' : 'Look for: ') . $what) ?>">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2.4" stroke-linecap="square" aria-hidden="true">
+                    <circle cx="12" cy="12" r="7"/><path d="M12 1v3 M12 20v3 M1 12h3 M20 12h3"/>
+                  </svg>
+                  </button>
+                </form>
+              <?php endif; ?>
             <?php else: ?>
               <?php /* Read-only. The tick shows only where it means something —
                        an empty square nobody can press is an affordance that lies. */ ?>
               <div class="plate mini-plate is-static">
                 <span class="mini-photo<?= $photo ? '' : ' is-blank' ?>"
                       <?= $photo ? 'style="background-image:url(\'' . e($photo) . '\')"' : '' ?>></span>
+                <?php if ($m['wanted']): ?><span class="want-strip" aria-hidden="true">Wanted</span><?php endif; ?>
               </div>
               <?php if ($m['owned']): ?>
                 <span class="tick is-static" role="img" aria-label="Owned">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        stroke-width="3" stroke-linecap="square" aria-hidden="true">
                     <path d="M5 12.5 10 17.5 19 7"/>
+                  </svg>
+                </span>
+              <?php endif; ?>
+              <?php if ($m['wanted']): ?>
+                <span class="want is-static" role="img" aria-label="Wanted">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2.4" stroke-linecap="square" aria-hidden="true">
+                    <circle cx="12" cy="12" r="7"/><path d="M12 1v3 M12 20v3 M1 12h3 M20 12h3"/>
                   </svg>
                 </span>
               <?php endif; ?>

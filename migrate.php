@@ -19,6 +19,7 @@ $minis  = $prefix . 'miniatures';
 $sets   = $prefix . 'sets';
 $own    = $prefix . 'ownership';
 $ranges = $prefix . 'ranges';
+$want   = $prefix . 'wanted';
 $steps  = [];
 $fatal  = null;
 $ran    = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
@@ -231,6 +232,33 @@ try {
         step('todo', 'Ranges will gain a category column, every existing range starting as Fantasy.');
     }
 
+    /* ── the hunt: a wanted list beside the collection ── */
+
+    $wantExists = false;
+    try {
+        db()->query('SELECT 1 FROM `' . $want . '` LIMIT 1');
+        $wantExists = true;
+    } catch (PDOException $ex) {
+        $wantExists = false;
+    }
+
+    if ($wantExists) {
+        step('skip', 'The wanted list already exists.');
+    } elseif ($ran) {
+        db()->exec(
+            'CREATE TABLE `' . $want . '` (
+               miniature_id INT UNSIGNED NOT NULL,
+               created_at   DATETIME     NOT NULL,
+               PRIMARY KEY (miniature_id),
+               CONSTRAINT `fk_want_mini` FOREIGN KEY (miniature_id)
+                 REFERENCES `' . $minis . '` (id) ON DELETE CASCADE
+             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+        );
+        step('good', 'Created ' . $want . ' — miniatures can now be marked as wanted.');
+    } else {
+        step('todo', $want . ' will be created, so miniatures can be marked as wanted.');
+    }
+
     /* ── ownership: one collection for the archive, not one per user ── */
 
     if (column($own, 'user_id') === null) {
@@ -298,8 +326,8 @@ $blocked = array_filter($steps, static fn($s) => $s[0] === 'bad');
     <p class="page-blurb">
       Brings the tables in line with the current schema: a miniature's photograph becomes its one
       required field, two sets in the same range become free to share a code, ownership becomes
-      a single collection for the whole archive rather than one per account, and ranges gain a
-      top-level category.
+      a single collection for the whole archive rather than one per account, ranges gain a
+      top-level category, and a wanted list sits beside the collection.
     </p>
 
     <?php foreach ($steps as [$tone, $text]): ?>

@@ -181,17 +181,23 @@ function repo_set(int $id): ?array
 function repo_miniatures(int $setId): array
 {
     $sql = 'SELECT m.id, m.code, m.name, m.photo, m.sort_index,
-                   (o.miniature_id IS NOT NULL) AS owned
+                   (o.miniature_id IS NOT NULL) AS owned,
+                   (w.miniature_id IS NOT NULL) AS wanted
               FROM ' . tbl('miniatures') . ' m
          LEFT JOIN ' . tbl('ownership') . ' o
                 ON o.miniature_id = m.id
+         LEFT JOIN ' . tbl('wanted') . ' w
+                ON w.miniature_id = m.id
              WHERE m.set_id = :sid
           ORDER BY m.sort_index ASC, m.id ASC';
 
     $rows = q($sql, ['sid' => $setId])->fetchAll();
     foreach ($rows as &$row) {
-        $row['id']    = (int)$row['id'];
-        $row['owned'] = (bool)$row['owned'];
+        $row['id']     = (int)$row['id'];
+        $row['owned']  = (bool)$row['owned'];
+        // Wanting something you own is meaningless, so the flag is masked
+        // rather than deleted — un-ticking owned restores the hunt.
+        $row['wanted'] = !$row['owned'] && (bool)$row['wanted'];
     }
     unset($row);
     return $rows;
@@ -215,6 +221,33 @@ function repo_set_owned(int $miniatureId, bool $owned): void
     } else {
         q('DELETE FROM ' . tbl('ownership') . ' WHERE miniature_id = ?', [$miniatureId]);
     }
+}
+
+/* — the hunt — the same shape as ownership — */
+
+function repo_set_wanted(int $miniatureId, bool $wanted): void
+{
+    if ($wanted) {
+        q(
+            'INSERT IGNORE INTO ' . tbl('wanted') . ' (miniature_id, created_at) VALUES (?, NOW())',
+            [$miniatureId]
+        );
+    } else {
+        q('DELETE FROM ' . tbl('wanted') . ' WHERE miniature_id = ?', [$miniatureId]);
+    }
+}
+
+/** Wanted only counts where it is not already owned. */
+function repo_wanted_count_in_set(int $setId): int
+{
+    $row = q(
+        'SELECT COUNT(*) AS n FROM ' . tbl('wanted') . ' w
+           JOIN ' . tbl('miniatures') . ' m ON m.id = w.miniature_id
+      LEFT JOIN ' . tbl('ownership') . ' o ON o.miniature_id = m.id
+          WHERE m.set_id = ? AND o.miniature_id IS NULL',
+        [$setId]
+    )->fetch();
+    return (int)$row['n'];
 }
 
 function repo_owned_count_in_set(int $setId): int

@@ -63,6 +63,18 @@ CREATE TABLE IF NOT EXISTS ll_miniatures (
     REFERENCES ll_sets (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- The hunt: miniatures being actively looked for. Same shape and same rules as
+-- ownership — one list for the archive, admin-only to change. Only meaningful
+-- while a miniature is unowned; the row is kept when it is owned, so
+-- un-ticking restores the hunt rather than losing it.
+CREATE TABLE IF NOT EXISTS ll_wanted (
+  miniature_id INT UNSIGNED NOT NULL,
+  created_at   DATETIME     NOT NULL,
+  PRIMARY KEY (miniature_id),
+  CONSTRAINT fk_want_mini FOREIGN KEY (miniature_id)
+    REFERENCES ll_miniatures (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- One collection, the archive's own. Everyone sees the same ticks; only an
 -- admin can change them, so there is no user column.
 CREATE TABLE IF NOT EXISTS ll_ownership (
