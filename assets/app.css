@@ -123,6 +123,9 @@ a:hover { color: var(--color-accent-700); }
   padding: 13px 16px; margin-bottom: 18px;
   border-bottom: 2px solid var(--color-divider);
   cursor: pointer; list-style: none;
+  /* A row that opens and closes on click is a control, not copy — opening
+     one twice should not leave its title highlighted. */
+  -webkit-user-select: none; user-select: none;
 }
 .range-head::-webkit-details-marker { display: none; }
 .range-head h3 { font-size: 24px; margin: 0; }
