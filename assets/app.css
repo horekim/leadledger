@@ -233,6 +233,10 @@ details[open] > summary .tog-close { display: block; }
 
 /* ── 3. Filter bar ── */
 
+/* On the index the bar holds no controls — it is there for its rule, and the
+   first category label sits under it exactly as the later ones sit under
+   theirs. */
+.filter-bar.is-bare { margin-bottom: 10px; }
 .filter-bar {
   position: sticky; top: 53px; z-index: 20;
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
@@ -599,6 +603,7 @@ tr.dragging { opacity: .45; }
   .category + .category { margin-top: 32px; }
   .category-head { font-size: 15px; margin-bottom: 16px; }
   .category + .category .category-head { padding-top: 9px; }
+  .filter-bar.is-bare { margin-bottom: 9px; }
   .range-head { flex-wrap: wrap; align-items: center; gap: 6px 12px; }
   /* basis 0, so a long name wraps inside the heading instead of pushing
      itself onto a line below the toggle. */

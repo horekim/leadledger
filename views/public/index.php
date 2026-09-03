@@ -26,7 +26,7 @@
 
   <?php /* Empty on this page — the filter controls are set-page only. It is here
            for the rule it draws beneath the head. */ ?>
-  <div class="filter-bar"></div>
+  <div class="filter-bar is-bare"></div>
 
   <?php if (!$catalogue): ?>
     <div class="empty-state">
