@@ -19,8 +19,9 @@ const LL_DEFAULT_CATEGORY = 'fantasy';
 function categories(): array
 {
     return [
-        'fantasy' => 'Fantasy',
-        'scifi'   => 'Sci-fi',
+        'fantasy'    => 'Fantasy',
+        'scifi'      => 'Sci-fi',
+        'specialist' => 'Specialist games',
     ];
 }
 
