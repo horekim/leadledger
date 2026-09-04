@@ -34,6 +34,33 @@
     });
   }
 
+  /* ── The header's height, published to CSS ────────────────────────────── */
+
+  /* Every sticky rail is offset from the header, and the header is not one
+     fixed size: the signed-out Sign in button makes it taller than the nav
+     does, and below 900px the nav drops to a second row. CSS starts at the
+     design's 53px; this measures the real thing and overwrites it, so a rail
+     never sits a few pixels low with the page sliding through the gap. */
+  (function headerHeight() {
+    var header = $('.app-header');
+    if (!header) { return; }
+
+    function publish() {
+      document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+    }
+
+    publish();
+
+    // The three things that move it after that: the viewport changing (which
+    // is also what wraps the nav to a second row below 900px), the heading
+    // face arriving, and an orientation flip. Nothing mutates the header
+    // mid-session — signing out is a POST and a fresh page.
+    window.addEventListener('resize', publish);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(publish);
+    }
+  }());
+
   /* ── Reading a miniature's name out of its filename ───────────────────── */
 
   var CODEY  = /^[a-z]{0,3}\d+[a-z]?$/i;

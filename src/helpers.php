@@ -64,6 +64,16 @@ function url(string $path = ''): string
     return $path === '' ? ($prefix === '' ? '/' : $prefix) : $prefix . '/' . $path;
 }
 
+/**
+ * Where to write about a miniature. Shown on the wanted page, which exists to
+ * be answered, so it is configurable rather than compiled in.
+ */
+function contact_email(): string
+{
+    $set = (string)(config('contact_email') ?? '');
+    return $set !== '' ? $set : 'jonas@verdensmand.com';
+}
+
 function redirect(string $path): void
 {
     header('Location: ' . url($path), true, 302);

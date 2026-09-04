@@ -17,10 +17,17 @@
         <div class="stat-num"><?= e(num($totals['sets'])) ?></div>
         <div class="stat-lbl">Sets</div>
       </div>
-      <div class="stat-own">
+      <div>
         <div class="stat-num"><?= e(num($totals['owned'])) ?></div>
         <div class="stat-lbl">Owned</div>
       </div>
+      <?php /* The only accent pair in the row, figure and label both, and the
+               only one that goes anywhere. Owned is deliberately left in ink:
+               three red figures side by side cancel each other out. */ ?>
+      <a class="stat-want" href="<?= e(url('wanted')) ?>">
+        <div class="stat-num"><?= e(num($totals['wanted'])) ?></div>
+        <div class="stat-lbl">Wanted</div>
+      </a>
     </div>
   </div>
 

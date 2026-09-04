@@ -29,10 +29,11 @@ carries the **`ll_`** prefix, so it can share a database with anything else.
        'db_user' => 'CHANGEME',
        'db_pass' => 'CHANGEME',
 
-       'db_prefix'   => 'll_',
-       'site_name'   => 'Lead Ledger',
-       'pretty_urls' => true,         // false if .htaccess cannot be used
-       'debug'       => false,
+       'db_prefix'     => 'll_',
+       'site_name'     => 'Lead Ledger',
+       'contact_email' => 'you@example.com',  // the address the Wanted page asks people to write to
+       'pretty_urls'   => true,       // false if .htaccess cannot be used
+       'debug'         => false,
    ];
    ```
 4. **Open `https://yourdomain/install.php`** and press *Create tables and write
@@ -78,7 +79,7 @@ hostname it shows.
 | --- | --- |
 | `index.php` | Front controller — every route in one file |
 | `src/` | `db` (PDO + the `ll_` prefix), `auth`, `repo` (all SQL), `upload`, `view`, `helpers` |
-| `views/` | Plain PHP templates: `layout`, `public/`, `admin/`, `auth` |
+| `views/` | Plain PHP templates: `layout`, `public/`, `admin/`, `auth`. `public/_plate.php` is the miniature photograph and its two controls, shared by the set grid and the wanted page |
 | `assets/ds/styles.css` | The Modernist design system, ported unchanged from the handoff |
 | `assets/app.css` | The project layer on top of it |
 | `assets/app.js` | Optimistic ticks, dialogs, the drawer, drag-reordering |
@@ -102,6 +103,7 @@ tells you when there is nothing left to do — delete it then.
 | --- | --- |
 | `GET /` | The sets index — every set, grouped by range |
 | `GET /{range-slug}/{set-code}` | A set's photo grid |
+| `GET /wanted` | The want ad — every miniature on the hunt, grouped by genre. Public, and meant to be pasted into forum posts |
 | `GET POST /sign-in` | Sign in / create account (`?mode=up`) |
 | `POST /sign-out` | |
 | `GET /admin` | All ranges, each with its sets |
@@ -152,8 +154,17 @@ server both refuse to save a miniature without a photograph.
 
 ## A judgment call worth knowing about
 
-- **The header's Admin button only appears for the catalogue owner.** The design
+- **The header's Admin link only appears for the catalogue owner.** The design
   shows it for anyone signed in, but a collector has nothing to manage.
+- **The wanted page's crosshairs are the admin's, like every other tick.** The
+  page is public to read; changing what is on the hunt needs the owner account,
+  which is what the handoff asks for on port.
+- **The header's height is measured, not assumed.** The design fixes it at 53px
+  and offsets several sticky rails from that, but the signed-out header carries
+  a Sign in button and stands 61px, and below 900px the nav wraps to a second
+  row. `--header-h` starts at 53px in CSS and `app.js` overwrites it with the
+  real height on load and on resize, so no rail sits low with the page sliding
+  through the gap. It was 8px out before this.
 
 Ticking is per miniature only. The handoff describes a "tick whole set" bulk
 action; it was built and then removed on request, so there is no bulk endpoint.

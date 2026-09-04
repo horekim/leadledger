@@ -4,6 +4,7 @@
  *
  *   /                          the sets index
  *   /{range-slug}/{set-code}   a set's photo grid
+ *   /wanted                    the want ad — everything on the hunt
  *   /sign-in                   sign in / create account
  *   /admin                     ranges & sets
  *   /admin/sets/{id}           a set's miniatures
@@ -473,6 +474,20 @@ if ($seg === []) {
         'title'     => '’Eavy Metal',
         'catalogue' => $catalogue,
         'totals'    => repo_totals($catalogue),
+    ]);
+    exit;
+}
+
+// GET /wanted
+// A shareable want ad, so it has a URL of its own rather than a filter on the
+// index — it gets pasted into forum posts and messages.
+if ($seg === ['wanted']) {
+    render('public/wanted', [
+        'title'   => 'Wanted',
+        'screen'  => 'wanted',
+        'wanted'  => repo_wanted(),
+        'density' => density(),
+        'contact' => contact_email(),
     ]);
     exit;
 }

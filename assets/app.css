@@ -5,7 +5,11 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 body { margin: 0; }
-a:hover { color: var(--color-accent-700); }
+/* Paragraph-size accent text must use the deep ramp step — --color-accent is
+   3.78:1 against the page, too low for body copy — so every link takes 700
+   and hovers to 800, rather than the system's default accent. */
+a { color: var(--color-accent-700); }
+a:hover { color: var(--color-accent-800); }
 
 /* — shared primitives — */
 .plate    { position: relative; overflow: hidden; background: var(--color-neutral-900); }
@@ -37,15 +41,24 @@ a:hover { color: var(--color-accent-700); }
 .count-line { font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
               color: color-mix(in srgb, var(--color-text) 50%, transparent); }
 
-/* ── 1. App header — 53px tall. Every sticky offset below depends on it. ── */
+/* ── 1. App header ── */
+
+/* The header's height, and every sticky offset measured from it. It was six
+   hard-coded 53s, which the nav promptly broke: swapping the Admin button for
+   a text link took three pixels off the header and left a gap under every
+   sticky rail. Pinned here instead, so the two can never drift apart. */
+:root { --header-h: 53px; }
 
 .app-header {
   position: sticky; top: 0; z-index: 30;
   background: var(--color-bg);
   border-bottom: 2px solid var(--color-divider);
 }
+/* min-height, not height: the mobile header wraps to a second row and has to
+   be free to grow. The border lives on .app-header, hence the 2px. */
 .app-header-in {
   display: flex; align-items: center; gap: 26px; padding: 12px 26px;
+  min-height: calc(var(--header-h) - 2px);
 }
 .brand {
   display: flex; align-items: baseline; gap: 10px;
@@ -62,6 +75,48 @@ a:hover { color: var(--color-accent-700); }
 }
 .app-header .btn { white-space: nowrap; flex: none; }
 .app-header form { display: contents; }
+
+/* Text links, no button chrome: the header holds two or three destinations
+   and one rare action, and buttons on all of them would read as a toolbar. */
+.app-nav { display: flex; align-items: center; gap: 20px; flex: none; margin-right: 6px; }
+.nav-link {
+  display: inline-flex; align-items: center; gap: 7px; padding: 3px 0;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 13px; letter-spacing: .04em;
+  text-decoration: none; color: var(--color-text);
+}
+.nav-link:hover { color: var(--color-accent-700); }
+/* A 2px underline rather than a fill — the rule the rest of the system
+   organises with, at the scale of a word. */
+.nav-link.is-active {
+  color: var(--color-accent); box-shadow: inset 0 -2px 0 var(--color-accent);
+}
+.nav-count {
+  font-family: var(--font-body); font-size: 10px; letter-spacing: .06em;
+  padding: 1px 5px;
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+.nav-link.is-active .nav-count { background: var(--color-accent); color: var(--color-bg); }
+.nav-div {
+  width: 1px; height: 15px; flex: none;
+  background: color-mix(in srgb, var(--color-text) 20%, transparent);
+}
+/* The way out of admin — quieter than the section it sits beside, because
+   leaving is not the thing you came here to do. */
+.nav-back {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12.5px; letter-spacing: .04em; text-decoration: none;
+  color: color-mix(in srgb, var(--color-text) 58%, transparent);
+}
+.nav-back:hover { color: var(--color-accent); }
+/* A submit button that has to read as a link — sign-out is a POST. */
+.link-quiet {
+  flex: none; padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: 12.5px; letter-spacing: .04em; white-space: nowrap;
+  color: color-mix(in srgb, var(--color-text) 52%, transparent);
+}
+.link-quiet:hover { color: var(--color-accent); }
 
 /* ── 2/3. Page shells ── */
 
@@ -88,7 +143,13 @@ a:hover { color: var(--color-accent-700); }
   font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 50%, transparent);
 }
-.stat-own .stat-num { color: var(--color-accent); }
+/* The row's one accent pair — figure and label both — and its one link.
+   Owned stays in ink: three coloured figures in a row cancel out. */
+.stat-want { text-decoration: none; color: inherit; }
+.stat-want .stat-num,
+.stat-want .stat-lbl { color: var(--color-accent); }
+.stat-want:hover .stat-num,
+.stat-want:hover .stat-lbl { color: var(--color-accent-700); }
 
 .breadcrumb {
   display: flex; align-items: center; gap: 10px;
@@ -205,7 +266,7 @@ details[open] > summary .tog-close { display: block; }
    stays selectable. */
 .rail {
   border-right: 2px solid var(--color-divider);
-  position: sticky; top: 53px; height: calc(100vh - 53px);
+  position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h));
   overflow: auto; padding: 20px 0 40px;
   -webkit-user-select: none; user-select: none;
 }
@@ -251,7 +312,7 @@ details[open] > summary .tog-close { display: block; }
    margin; the 10px only shows on an empty archive, above the empty state. */
 .filter-bar.is-bare { margin-bottom: 10px; }
 .filter-bar {
-  position: sticky; top: 53px; z-index: 20;
+  position: sticky; top: var(--header-h); z-index: 20;
   display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
   padding: 12px 0; margin-bottom: 26px; background-color: var(--color-bg);
   border-bottom: 2px solid var(--color-divider);
@@ -393,12 +454,79 @@ details[open] > summary .tog-close { display: block; }
 .empty-state strong { display: block; font-family: var(--font-heading); font-weight: 400; font-size: 20px; margin-bottom: 4px; }
 .empty-state span { font-size: 13px; color: color-mix(in srgb, var(--color-text) 55%, transparent); }
 
+/* ── 4. Wanted — the want ad ── */
+
+/* No bottom padding: the poster band closes the page, flush. */
+.page.is-wanted { padding: 30px 30px 0; }
+
+.page-head.wanted-head { padding-bottom: 16px; margin-bottom: 28px; }
+/* The word carries the page, so it runs bigger than any other h1 and takes
+   no kicker above it. */
+.page-head.wanted-head h1 { font-size: 60px; line-height: .94; margin: 0 0 10px; }
+.page-head.wanted-head .page-blurb {
+  font-size: 14px; max-width: 54ch;
+  color: color-mix(in srgb, var(--color-text) 62%, transparent);
+}
+.wanted-tally { flex: none; text-align: right; }
+.wanted-tally-num {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 56px; line-height: .9; color: var(--color-accent);
+}
+
+/* The genre head is the index's, minus its own top spacing — the section
+   gap governs here, and the page head already sets the first one off. */
+.wanted-genre { margin-bottom: 46px; }
+.wanted-genre .category-head { padding-top: 0; margin-top: 0; }
+
+/* Nothing on this page is dimmed. Every item is unowned by definition, so the
+   set grid's recessive treatment would push the whole page back — and the
+   photographs are the ask. */
+.wanted-grid .mini-card { background: var(--color-surface); }
+.wanted-grid .mini-photo { opacity: 1; filter: grayscale(1) contrast(1.08); }
+.wanted-grid .mini-code { color: var(--color-accent-700); }
+.wanted-grid .mini-name { color: var(--color-text); }
+/* The set line is what tells a stranger which casting this is, so it shows at
+   every density — including the contact sheet, which hides captions. */
+.mini-grid.wanted-grid[data-density] .mini-caption { display: flex; }
+.mini-set {
+  margin-top: 6px; padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  font-size: 10px; letter-spacing: .06em; text-transform: uppercase;
+  line-height: 1.3;
+  color: color-mix(in srgb, var(--color-text) 48%, transparent);
+}
+
+.empty-state.wanted-empty { padding: 64px 0; border-top: 0; }
+.wanted-empty .btn { margin-top: 20px; }
+
+/* The one place the accent runs as a field, per the design system. Full
+   bleed, so it sits outside the page's own measure. */
+.wanted-band { margin-top: 70px; background: var(--color-accent); color: var(--color-bg); }
+.wanted-poster {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  flex-wrap: wrap; gap: 36px;
+  max-width: 1320px; margin: 0 auto; padding: 52px 30px 56px;
+}
+.wanted-poster h2 { font-size: 44px; line-height: 1; margin: 0 0 8px; color: var(--color-bg); }
+.wanted-poster p {
+  margin: 0; max-width: 48ch; font-size: 14px; line-height: 1.55;
+  color: color-mix(in srgb, var(--color-bg) 88%, transparent);
+}
+/* Inverted: the address is the button, and the band is its ground. */
+.wanted-mail {
+  flex: none; padding: 15px 22px; text-decoration: none;
+  background: var(--color-bg); color: var(--color-accent);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 15px; letter-spacing: .02em;
+}
+.wanted-mail:hover { color: var(--color-accent-600); }
+
 /* ── 5/6. Admin shell ── */
 
-.admin-shell { display: grid; grid-template-columns: 200px minmax(0, 1fr); min-height: calc(100vh - 53px); }
+.admin-shell { display: grid; grid-template-columns: 200px minmax(0, 1fr); min-height: calc(100vh - var(--header-h)); }
 .admin-rail {
   background: var(--color-surface); border-right: 2px solid var(--color-divider);
-  padding: 18px 0; position: sticky; top: 53px; height: calc(100vh - 53px);
+  padding: 18px 0; position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h));
   display: flex; flex-direction: column;
   -webkit-user-select: none; user-select: none;
 }
@@ -563,7 +691,7 @@ tr.dragging { opacity: .45; }
 
 /* ── 10. Sign in / create account ── */
 
-.auth-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: calc(100vh - 53px); }
+.auth-shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: calc(100vh - var(--header-h)); }
 .auth-form {
   display: flex; flex-direction: column; justify-content: center;
   padding: 64px 56px; max-width: 560px;
@@ -612,8 +740,27 @@ tr.dragging { opacity: .45; }
 /* ── Responsive — one breakpoint ── */
 
 @media (max-width: 900px) {
-  .app-header-in { padding: 10px 16px; gap: 12px; }
+  /* Two rows: brand and account above, the whole nav on its own full-width
+     band below. With three destinations that beats a drawer — nothing is
+     hidden behind a tap. The header is taller than --header-h here, which is why
+     every sticky offset below goes static or disappears at this width. */
+  .app-header-in { flex-wrap: wrap; padding: 10px 16px 0; gap: 12px; }
   .brand-sub { display: none; }
+  /* Basis is the border box, so a plain 100% stops 32px short of the screen
+     once the negative margins pull it out — the rule above the row has to
+     reach both edges, so ask for the padding back. */
+  .app-nav {
+    order: 3; flex-basis: calc(100% + 32px); gap: 22px;
+    margin: 0 -16px; padding: 0 16px;
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  }
+  .app-nav .nav-link,
+  .app-nav .nav-back { font-size: 14px; padding: 11px 0 9px; }
+  .page.is-wanted { padding: 20px 16px 0; }
+  .page-head.wanted-head h1 { font-size: 38px; }
+  .wanted-tally-num { font-size: 40px; }
+  .wanted-poster { padding: 34px 16px 38px; gap: 24px; }
+  .wanted-poster h2 { font-size: 30px; }
   .shell { display: block; }
   .rail { display: none; }
   .page, .page-main { padding: 20px 16px 72px; }
@@ -715,5 +862,3 @@ tr.dragging { opacity: .45; }
    a rule of the system the base .btn does not itself carry. */
 .btn:has(.msym) { justify-content: flex-start; gap: 5px; }
 
-/* The signed-in header pair sits closer than the header's own 26px rhythm. */
-.header-actions { display: flex; align-items: center; gap: 10px; flex: none; }

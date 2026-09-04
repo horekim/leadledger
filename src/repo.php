@@ -120,7 +120,10 @@ function repo_catalogue(): array
     return array_values($ranges);
 }
 
-/** The three headline figures, derived — never hard-coded. */
+/**
+ * The four headline figures, derived — never hard-coded. Three of them fall
+ * out of the catalogue already in hand; the hunt spans it and asks for itself.
+ */
 function repo_totals(array $catalogue): array
 {
     $minis = 0;
@@ -131,7 +134,12 @@ function repo_totals(array $catalogue): array
         $owned += $range['owned_count'];
         $sets  += count($range['sets']);
     }
-    return ['miniatures' => $minis, 'sets' => $sets, 'owned' => $owned];
+    return [
+        'miniatures' => $minis,
+        'sets'       => $sets,
+        'owned'      => $owned,
+        'wanted'     => repo_wanted_total(),
+    ];
 }
 
 function repo_range_by_slug(string $slug): ?array
@@ -248,6 +256,99 @@ function repo_wanted_count_in_set(int $setId): int
         [$setId]
     )->fetch();
     return (int)$row['n'];
+}
+
+/* — the hunt, whole — what the wanted page shows — */
+
+/**
+ * Every miniature on the hunt, across the archive, with the set and range it
+ * came from. The wanted page is a flat list rather than a walk of the
+ * catalogue, so this is one query.
+ *
+ * Owned rows are excluded here as well as cleared on the tick: a wanted row
+ * left behind by an older build never shows as sought.
+ *
+ * Sorted in PHP, not ORDER BY, for the same reason sets are — set codes need
+ * a natural sort (C01 < C06 < C11) and MySQL has none.
+ */
+function repo_wanted(): array
+{
+    $sql = 'SELECT m.id, m.code, m.name, m.photo,
+                   s.id       AS set_id,
+                   s.code     AS set_code,
+                   s.slug     AS set_slug,
+                   s.name     AS set_name,
+                   r.name     AS range_name,
+                   r.slug     AS range_slug,
+                   r.category AS range_category
+              FROM ' . tbl('wanted') . ' w
+              JOIN ' . tbl('miniatures') . ' m ON m.id = w.miniature_id
+              JOIN ' . tbl('sets') . ' s       ON s.id = m.set_id
+              JOIN ' . tbl('ranges') . ' r     ON r.id = s.range_id
+         LEFT JOIN ' . tbl('ownership') . ' o  ON o.miniature_id = m.id
+             WHERE o.miniature_id IS NULL';
+
+    $rows = q($sql)->fetchAll();
+
+    foreach ($rows as &$row) {
+        $row['id']       = (int)$row['id'];
+        $row['set_id']   = (int)$row['set_id'];
+        // The card markup is shared with the set page, which reads both.
+        $row['owned']    = false;
+        $row['wanted']   = true;
+        $row['category'] = category_valid((string)$row['range_category'])
+            ? (string)$row['range_category']
+            : LL_DEFAULT_CATEGORY;
+    }
+    unset($row);
+
+    usort($rows, static function (array $a, array $b): int {
+        return strnatcasecmp($a['set_code'], $b['set_code'])
+            ?: strnatcasecmp((string)$a['code'], (string)$b['code'])
+            ?: ($a['id'] <=> $b['id']);
+    });
+
+    return $rows;
+}
+
+/**
+ * The hunt grouped into its categories, in category order, dropping any that
+ * hold nothing. Each group is ['key', 'label', 'items'].
+ *
+ * Deliberately not repo_by_category(): that one groups ranges, and the wanted
+ * page has no range level — the genre heading sits straight above the grid.
+ */
+function repo_wanted_by_category(array $wanted): array
+{
+    $groups = [];
+    foreach (categories() as $key => $label) {
+        $groups[$key] = ['key' => $key, 'label' => $label, 'items' => []];
+    }
+
+    foreach ($wanted as $mini) {
+        $groups[$mini['category']]['items'][] = $mini;
+    }
+
+    return array_values(array_filter($groups, static fn(array $g): bool => $g['items'] !== []));
+}
+
+/**
+ * How many miniatures are sought. The header's count chip asks for this on
+ * every page, so the answer is held for the request.
+ */
+function repo_wanted_total(): int
+{
+    static $total = null;
+    if ($total === null) {
+        $row = q(
+            'SELECT COUNT(*) AS n FROM ' . tbl('wanted') . ' w
+               JOIN ' . tbl('miniatures') . ' m ON m.id = w.miniature_id
+          LEFT JOIN ' . tbl('ownership') . ' o ON o.miniature_id = m.id
+              WHERE o.miniature_id IS NULL'
+        )->fetch();
+        $total = (int)$row['n'];
+    }
+    return $total;
 }
 
 function repo_owned_count_in_set(int $setId): int
