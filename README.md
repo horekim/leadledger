@@ -2,7 +2,7 @@
 
 A public catalogue of vintage Citadel / Games Workshop miniatures (1984–1992),
 with an admin backend for maintaining it. Built to the design handoff in
-[`design_handoff_lead_ledger/`](design_handoff_lead_ledger/README.md).
+[`design_handoff_miniatures_catalogue/`](design_handoff_miniatures_catalogue/README.md).
 
 Plain PHP 8 and MySQL over PDO — no framework, no build step, no Composer —
 because that is what one.com shared hosting runs happily. Every table it touches
@@ -85,7 +85,7 @@ hostname it shows.
 | `assets/app.js` | Optimistic ticks, dialogs, the drawer, drag-reordering |
 | `uploads/` | Miniature photographs (four samples committed, the rest ignored) |
 | `schema.sql` · `install.php` | The `ll_` tables, and the one-time installer |
-| `design_handoff_lead_ledger/` | The original design bundle, kept for reference |
+| `design_handoff_miniatures_catalogue/` | The current design bundle, kept for reference — it supersedes the earlier `design_handoff_lead_ledger/` |
 
 `src/` and `views/` are blocked by `.htaccess`; nothing under `uploads/` is ever
 executed.
