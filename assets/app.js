@@ -73,7 +73,7 @@
 
   /* ── Owned ticks — optimistic, no confirmation, no toast ───────────────── */
 
-  /* Add or remove the WANTED bar across the foot of a card's plate. */
+  /* Add or remove the WANTED bar across the head of a card's plate. */
   function strip(card, on) {
     var plate = card && $('.mini-plate', card);
     if (!plate) { return; }

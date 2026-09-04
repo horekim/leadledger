@@ -291,15 +291,12 @@ details[open] > summary .tog-close { display: block; }
 .mini-grid[data-density="contact"] .mini-caption { display: none; }
 
 /* One column: the photograph and the two controls share the first cell, the
-   caption takes the second. --strip-h is the room the WANTED bar needs along
-   the plate's foot, so the controls can clear it. */
+   caption takes the second. */
 .mini-card {
   display: grid; grid-template-columns: minmax(0, 1fr); align-content: start;
   padding: var(--space-2); gap: var(--space-2);
   background: color-mix(in srgb, var(--color-surface) 55%, var(--color-bg));
-  --strip-h: 0px;
 }
-.mini-card:has(.want-strip) { --strip-h: 16px; }
 .mini-card.is-owned { background: var(--color-surface); }
 
 .mini-plate {
@@ -321,7 +318,7 @@ details[open] > summary .tog-close { display: block; }
    padding the card carries around it. */
 .tick {
   grid-area: 1 / 1; justify-self: end; align-self: end; z-index: 3;
-  margin: var(--space-2); margin-bottom: calc(var(--space-2) + var(--strip-h));
+  margin: var(--space-2);
   width: 34px; height: 34px; display: grid; place-items: center; padding: 0;
   cursor: pointer;
   border: 2px solid color-mix(in srgb, var(--color-bg) 60%, transparent);
@@ -342,7 +339,7 @@ details[open] > summary .tog-close { display: block; }
    affordance is discoverable rather than hidden until used. */
 .want {
   grid-area: 1 / 1; justify-self: end; align-self: end; z-index: 3;
-  margin: var(--space-2); margin-bottom: calc(var(--space-2) + var(--strip-h) + 40px);
+  margin: var(--space-2); margin-bottom: calc(var(--space-2) + 40px);
   width: 34px; height: 34px; display: grid; place-items: center; padding: 0;
   cursor: pointer;
   border: 2px solid color-mix(in srgb, var(--color-bg) 60%, transparent);
@@ -358,21 +355,19 @@ details[open] > summary .tog-close { display: block; }
 }
 /* Read-only, a wanted miniature is never also owned, so no tick sits below
    the badge — it takes the corner rather than leaving a gap. */
-.want.is-static {
-  cursor: default; margin-bottom: calc(var(--space-2) + var(--strip-h));
-}
+.want.is-static { cursor: default; margin-bottom: var(--space-2); }
 
 /* Owning ends the hunt. Hidden here rather than by the hidden attribute,
    which .mini-card form { display: contents } would outrank. */
 .mini-card.is-owned .want { display: none; }
 
-/* The at-a-glance signal in a dense grid. */
+/* The at-a-glance signal in a dense grid. It runs across the head of the
+   plate, clear of the controls in the opposite corner. */
 .want-strip {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  position: absolute; left: 0; right: 0; top: 0; z-index: 3;
   /* Stated rather than inherited: the owner's plate is a button, whose line
      height does not come from the page, and the visitor's is a div, whose
-     does — the bar was 4px taller for visitors. 16px all told, which is what
-     --strip-h reserves. */
+     does — the bar was 4px taller for visitors. */
   padding: 3px 6px; line-height: 10px; text-align: left;
   background: var(--color-accent); color: var(--color-bg);
   font-family: var(--font-heading); font-weight: 800;
