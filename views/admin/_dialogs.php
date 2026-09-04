@@ -31,9 +31,16 @@
     <?php /* Sets only — a range has no parent to move it to. */ ?>
     <div class="field" data-editor-range-field hidden>
       <label for="ed-range">Range</label>
+      <?php /* Grouped the way the archive itself is grouped. The category is
+               an <optgroup> label, so the browser draws it as a heading and
+               will not let it be chosen — only a range under it. */ ?>
       <select class="input" id="ed-range" name="range_id" data-editor-range>
-        <?php foreach (repo_ranges() as $r): ?>
-          <option value="<?= e((string)$r['id']) ?>"><?= e($r['name']) ?></option>
+        <?php foreach (repo_by_category(repo_ranges()) as $group): ?>
+          <optgroup label="<?= e($group['label']) ?>">
+            <?php foreach ($group['ranges'] as $r): ?>
+              <option value="<?= e((string)$r['id']) ?>"><?= e($r['name']) ?></option>
+            <?php endforeach; ?>
+          </optgroup>
         <?php endforeach; ?>
       </select>
     </div>
