@@ -13,8 +13,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0">
 <style>
 body { margin: 0; }
-a { color: var(--color-accent); }
-a:hover { color: var(--color-accent-700); }
+a { color: var(--color-accent-700); }
+a:hover { color: var(--color-accent-800); }
 /* photographs print in pure black and white, flat on the grid */
 .plate { position: relative; overflow: hidden; background: var(--color-neutral-900); }
 .panel { background: var(--color-surface); border-radius: var(--radius-md); }
@@ -23,14 +23,27 @@ a:hover { color: var(--color-accent-700); }
 .rule-b { border-bottom: 2px solid var(--color-divider); }
 .rule-tb { border-top: 2px solid var(--color-divider); border-bottom: 2px solid var(--color-divider); }
 .row-hit:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+.range-head { color: var(--color-text); background: transparent; }
+.range-head .msym { color: var(--color-accent); }
+@media (hover: hover) { .range-head:hover { background: var(--color-surface); } }
 .msym { font-family: "Material Symbols Outlined"; font-size: 20px; line-height: 1; font-weight: 400; }
+.quiet-link:hover { color: var(--color-accent) !important; }
 .icon-btn { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; cursor: pointer; color: color-mix(in srgb, var(--color-text) 60%, transparent); }
 .icon-btn:hover { background: color-mix(in srgb, var(--color-text) 8%, transparent); color: var(--color-text); }
 .icon-btn.danger:hover { background: var(--color-accent-100); color: var(--color-accent-700); }
 .tbl-scroll { overflow-x: auto; }
 @media (max-width: 900px) {
-  .app-header { padding: 10px 16px !important; gap: 12px !important; }
+  .app-header { padding: 10px 16px 0 !important; gap: 12px !important; flex-wrap: wrap; }
   .app-header .brand-sub { display: none; }
+  /* two destinations only: the nav drops to its own flush-left row */
+  .app-header nav {
+    order: 3; flex-basis: 100% !important; margin: 0 -16px !important;
+    padding: 0 16px !important; gap: 22px !important;
+    border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+  }
+  .app-header nav a { padding: 11px 0 9px !important; font-size: 14px !important; }
+  .wanted-poster { padding: 34px 16px 38px !important; }
+  .wanted-poster h2 { font-size: 30px !important; }
   .shell { display: block !important; }
   .rail { display: none !important; }
   .page-main { padding: 20px 16px 72px !important; }
@@ -69,11 +82,25 @@ a:hover { color: var(--color-accent-700); }
           <span style="font-family:var(--font-heading);font-weight:800;font-size:20px;letter-spacing:-.02em;text-transform:uppercase">Lead Ledger</span>
           <span class="brand-sub" style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 45%,transparent)">Oldhammer archive</span>
         </a>
+        <sc-if value="{{ showPublicNav }}" hint-placeholder-val="{{ true }}">
+          <nav style="display:flex;align-items:center;gap:20px;flex:none;margin-right:6px">
+            <a href="#" onClick="{{ goBrowse }}" style="{{ navCatalogueStyle }}">Collection</a>
+            <a href="#" onClick="{{ goWanted }}" style="{{ navWantedStyle }}">Wanted<span style="{{ navWantedCountStyle }}">{{ wantedCount }}</span></a>
+            <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+              <span class="nav-div" style="width:1px;height:15px;background:color-mix(in srgb,var(--color-text) 20%,transparent)"></span>
+              <a href="#" onClick="{{ goAdmin }}" style="{{ navAdminStyle }}">Admin</a>
+            </sc-if>
+          </nav>
+        </sc-if>
+        <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+          <nav style="display:flex;align-items:center;gap:20px;flex:none;margin-right:6px">
+            <a href="#" onClick="{{ goBrowse }}" class="quiet-link" style="{{ navBackStyle }}"><span class="msym" style="font-size:15px">arrow_back</span>Public site</a>
+            <span class="nav-div" style="width:1px;height:15px;background:color-mix(in srgb,var(--color-text) 20%,transparent)"></span>
+            <a href="#" onClick="{{ goAdmin }}" style="{{ navAdminStyle }}">Admin</a>
+          </nav>
+        </sc-if>
         <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
-          <div style="display:flex;align-items:center;gap:10px;flex:none">
-            <button class="btn btn-ghost" onClick="{{ signOut }}" style="white-space:nowrap;flex:none">Sign out</button>
-            <button class="btn btn-secondary" onClick="{{ headerNav }}" style="white-space:nowrap;flex:none;justify-content:flex-start;gap:5px"><span style="{{ headerNavIconStyle }}" class="msym">arrow_back</span>{{ headerNavLabel }}</button>
-          </div>
+          <a href="#" onClick="{{ signOut }}" class="quiet-link" style="{{ signOutStyle }}">Sign out</a>
         </sc-if>
         <sc-if value="{{ showSignInButton }}" hint-placeholder-val="{{ false }}">
           <button class="btn btn-secondary" onClick="{{ openLogin }}" style="white-space:nowrap;flex:none">Sign in</button>
@@ -87,10 +114,9 @@ a:hover { color: var(--color-accent-700); }
 
       <sc-if value="{{ isSetPage }}" hint-placeholder-val="{{ false }}">
       <aside class="rail" style="border-right:2px solid var(--color-divider);position:sticky;top:53px;height:calc(100vh - 53px);overflow:auto;padding:20px 0 40px">
-        <div style="padding:0 20px 14px">
-          <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Ranges</div>
-        </div>
-        <sc-for list="{{ tree }}" as="r" hint-placeholder-count="5">
+        <sc-for list="{{ tree }}" as="g" hint-placeholder-count="2">
+        <div class="rail-group" style="padding:14px 20px 6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 45%,transparent)">{{ g.name }}</div>
+        <sc-for list="{{ g.ranges }}" as="r" hint-placeholder-count="4">
           <div style="border-top:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)">
             <button onClick="{{ r.toggle }}" style="width:100%;display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:9px;padding:10px 20px;background:transparent;border:0;cursor:pointer;text-align:left;font-family:var(--font-heading);font-size:15px;color:var(--color-text)">
               <span style="{{ r.caretStyle }}">›</span>
@@ -110,6 +136,7 @@ a:hover { color: var(--color-accent-700); }
             </sc-if>
           </div>
         </sc-for>
+        </sc-for>
       </aside>
       </sc-if>
 
@@ -124,9 +151,6 @@ a:hover { color: var(--color-accent-700); }
                   <span style="color:color-mix(in srgb,var(--color-text) 28%,transparent)">/</span>
                   <span style="color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ crumb }}</span>
                 </div>
-              </sc-if>
-              <sc-if value="{{ isIndex }}" hint-placeholder-val="{{ true }}">
-                <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent);margin-bottom:7px">{{ crumb }}</div>
               </sc-if>
               <h1 style="font-size:44px;margin:0 0 5px;line-height:1">{{ heading }}</h1>
               <sc-if value="{{ isSetPage }}" hint-placeholder-val="{{ false }}">
@@ -145,9 +169,13 @@ a:hover { color: var(--color-accent-700); }
                 <div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Sets</div>
               </div>
               <div>
-                <div style="font-family:var(--font-heading);font-size:26px;line-height:1;color:var(--color-accent)">{{ ownedCount }}</div>
-                <div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">You own</div>
+                <div style="font-family:var(--font-heading);font-size:26px;line-height:1">{{ ownedCount }}</div>
+                <div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Owned</div>
               </div>
+              <a href="#" onClick="{{ goWanted }}" style="text-decoration:none;color:inherit">
+                <div style="font-family:var(--font-heading);font-size:26px;line-height:1;color:var(--color-accent)">{{ wantedCount }}</div>
+                <div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent)">Wanted</div>
+              </a>
             </div>
             </sc-if>
           </div>
@@ -170,17 +198,23 @@ a:hover { color: var(--color-accent-700); }
         </sc-if>
 
         <sc-if value="{{ isIndex }}" hint-placeholder-val="{{ true }}">
+          <div style="position:sticky;top:53px;z-index:20;padding:12px 0;margin-bottom:10px;background-color:var(--color-bg);border-bottom:2px solid var(--color-divider)"></div>
           <sc-for list="{{ genreSections }}" as="g" hint-placeholder-count="2">
-            <div style="margin-bottom:52px">
-              <div style="border-top:2px solid var(--color-divider);padding-top:9px;margin-bottom:26px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ g.name }}</div>
+            <div>
+              <h2 style="font-family:var(--font-heading);font-weight:400;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 55%,transparent);padding-top:16px;margin:26px 0 18px">{{ g.name }}</h2>
               <sc-for list="{{ g.ranges }}" as="r" hint-placeholder-count="3">
-            <section style="margin-bottom:44px">
-              <div style="display:flex;align-items:baseline;gap:12px;padding-bottom:9px;margin-bottom:18px" class="rule-b">
+            <section style="{{ r.sectionStyle }}">
+              <button class="range-head" onClick="{{ r.toggleRange }}" aria-expanded="{{ r.isOpen }}" aria-controls="{{ r.bodyId }}" style="{{ r.headStyle }}">
+                <span class="msym" style="font-size:22px;line-height:1;flex:none;align-self:center">{{ r.toggleGlyph }}</span>
                 <h3 style="margin:0;font-size:24px">{{ r.name }}</h3>
-                <span style="font-size:11px;color:color-mix(in srgb,var(--color-text) 48%,transparent)">{{ r.meta }}</span>
+                <span style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 48%,transparent)">{{ r.meta }}</span>
                 <span style="margin-left:auto;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">{{ r.ownedLabel }}</span>
+              </button>
+              <div style="{{ r.emptyStyle }}">
+                <strong style="display:block;font-family:var(--font-heading);font-weight:400;font-size:15px;margin-bottom:3px">No sets in this range yet</strong>
+                <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ r.emptyBody }}</span>
               </div>
-              <div class="set-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:22px">
+              <div class="set-grid" id="{{ r.bodyId }}" style="{{ r.bodyStyle }}">
                 <sc-for list="{{ r.sets }}" as="st" hint-placeholder-count="4">
                   <div onClick="{{ st.open }}" class="panel panel-hover" style="cursor:pointer;display:flex;flex-direction:column;gap:13px;padding:15px 16px">
                     <div style="display:flex;align-items:flex-start;gap:12px">
@@ -222,11 +256,11 @@ a:hover { color: var(--color-accent-700); }
                     <div style="{{ m.photoStyle }}"></div>
                     <div style="{{ m.stampStyle }}">OWNED</div>
                     <div style="{{ m.foldStyle }}"></div>
-                    <div style="{{ m.wantedStyle }}">WANTED</div>
-                    <button onClick="{{ m.toggle }}" title="Mark as owned" style="{{ m.boxStyleFloat }}">
+                    <div style="{{ m.wantedStyle }}">Wanted</div>
+                    <button onClick="{{ m.toggle }}" aria-pressed="{{ m.owned }}" title="Mark as owned" style="{{ m.boxStyleFloat }}">
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="{{ m.tickStyle }}"><path d="m5 12.5 4.5 4.5L19 7"></path></svg>
                     </button>
-                    <button onClick="{{ m.toggleWant }}" title="{{ m.wantTitle }}" style="{{ m.huntStyle }}">
+                    <button onClick="{{ m.toggleWant }}" aria-pressed="{{ m.wanted }}" title="{{ m.wantTitle }}" style="{{ m.huntStyle }}">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><circle cx="12" cy="12" r="7"></circle><path d="M12 1v3M12 20v3M1 12h3M20 12h3"></path></svg>
                     </button>
                   </div>
@@ -258,6 +292,70 @@ a:hover { color: var(--color-accent-700); }
 
       </main>
     </div>
+  </sc-if>
+
+  <sc-if value="{{ isWanted }}" hint-placeholder-val="{{ false }}">
+    <main style="max-width:1320px;margin:0 auto;padding:30px 30px 0;min-width:0">
+      <div class="page-head" style="display:flex;align-items:flex-end;justify-content:space-between;gap:30px;padding-bottom:16px;border-bottom:2px solid var(--color-divider);margin-bottom:28px">
+        <div>
+          <h1 style="font-size:60px;margin:0 0 10px;line-height:.94">Wanted</h1>
+          <p style="margin:0;max-width:54ch;font-size:14px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 62%,transparent);text-wrap:pretty">Miniatures I am still missing, across every range. Contact me at <a href="mailto:jonas@verdensmand.com">jonas@verdensmand.com</a> if you have any of these for sale or trade.</p>
+        </div>
+        <div style="flex:none;text-align:right">
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:56px;line-height:.9;color:var(--color-accent)">{{ wantedCount }}</div>
+          <div style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 50%,transparent)">Miniatures sought</div>
+        </div>
+      </div>
+
+      <sc-if value="{{ hasWanted }}" hint-placeholder-val="{{ true }}">
+        <sc-for list="{{ wantedGenres }}" as="g" hint-placeholder-count="3">
+        <section style="margin-bottom:46px">
+        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:18px">
+          <h2 style="margin:0;font-family:var(--font-heading);font-weight:400;font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 55%,transparent)">{{ g.name }}</h2>
+        </div>
+        <div class="mini-grid" style="{{ gridStyle }}">
+          <sc-for list="{{ g.items }}" as="w" hint-placeholder-count="6">
+            <div class="mini-card card" style="{{ w.cardStyle }}">
+              <div class="plate" style="position:relative;aspect-ratio:3/4;display:grid;place-items:center;cursor:pointer" onClick="{{ w.toggle }}">
+                <div style="{{ w.photoStyle }}"></div>
+                <div style="{{ w.wantedStyle }}">Wanted</div>
+                <button onClick="{{ w.toggle }}" aria-pressed="{{ w.owned }}" title="Mark as owned" style="{{ w.boxStyleFloat }}">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" style="{{ w.tickStyle }}"><path d="m5 12.5 4.5 4.5L19 7"></path></svg>
+                </button>
+                <button onClick="{{ w.toggleWant }}" aria-pressed="true" title="{{ w.wantTitle }}" style="{{ w.huntStyle }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"><circle cx="12" cy="12" r="7"></circle><path d="M12 1v3M12 20v3M1 12h3M20 12h3"></path></svg>
+                </button>
+              </div>
+              <div>
+                <div style="{{ w.codeStyle }}">{{ w.code }}</div>
+                <div style="{{ w.nameStyle }}">{{ w.name }}</div>
+                <div style="margin-top:6px;padding-top:6px;border-top:1px solid color-mix(in srgb,var(--color-text) 12%,transparent);font-size:10px;letter-spacing:.06em;text-transform:uppercase;line-height:1.3;color:color-mix(in srgb,var(--color-text) 48%,transparent)">{{ w.setLabel }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </section>
+        </sc-for>
+      </sc-if>
+
+      <sc-if value="{{ noWanted }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:64px 0;border-bottom:2px solid var(--color-divider)">
+          <div style="font-family:var(--font-heading);font-size:22px;margin-bottom:5px">Nothing on the hunt</div>
+          <div style="font-size:13.5px;max-width:46ch;line-height:1.55;color:color-mix(in srgb,var(--color-text) 58%,transparent)">Mark a miniature with the crosshair anywhere in the collection and it turns up here.</div>
+          <a href="#" onClick="{{ goBrowse }}" class="btn btn-secondary" style="margin-top:20px;text-decoration:none;justify-content:flex-start">Browse the collection</a>
+        </div>
+      </sc-if>
+    </main>
+
+    <section style="margin-top:70px;background:var(--color-accent);color:var(--color-bg)">
+      <div class="wanted-poster" style="max-width:1320px;margin:0 auto;padding:52px 30px 56px;display:flex;align-items:flex-end;justify-content:space-between;gap:36px;flex-wrap:wrap">
+        <div>
+          <h2 style="margin:0 0 8px;font-size:44px;line-height:1;color:var(--color-bg)">Got one of these?</h2>
+          <p style="margin:0;max-width:48ch;font-size:14px;line-height:1.55;color:color-mix(in srgb,var(--color-bg) 88%,transparent)">Send the code and a photograph. I will pay postage either way, and I trade from the duplicates drawer.</p>
+        </div>
+        <a href="mailto:jonas@verdensmand.com" style="flex:none;text-decoration:none;background:var(--color-bg);color:var(--color-accent);font-family:var(--font-heading);font-weight:800;font-size:15px;letter-spacing:.02em;padding:15px 22px">jonas@verdensmand.com</a>
+      </div>
+    </section>
   </sc-if>
 
   <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
@@ -528,7 +626,7 @@ class Component extends DCLogic {
   state = {
     screen: 'browse', expanded: { CIT: true, RR: true }, setFilter: null,
     query: '', ownedOnly: false, missingOnly: false, density: null,
-    owned: {}, wanted: {}, wantedOnly: false, photoOverrides: {}, dropActive: false, adminSetId: null, editor: null, confirm: null, drawerId: null, drag: null, dragOver: null, signedIn: null, authMode: 'in', page: 1
+    owned: {}, wanted: {}, wantedOnly: false, openRanges: {}, photoOverrides: {}, dropActive: false, adminSetId: null, editor: null, confirm: null, drawerId: null, drag: null, dragOver: null, signedIn: null, authMode: 'in', page: 1
   };
 
   genres = ['Fantasy', 'Sci-fi', 'Specialist games'];
@@ -575,8 +673,12 @@ class Component extends DCLogic {
 
   componentDidMount() {
     const owned = {};
-    this.all().forEach((m, i) => { if (i % 3 === 0 || i % 7 === 2) owned[m.code] = 1; });
-    this.setState({ owned });
+    const wanted = {};
+    this.all().forEach((m, i) => {
+      if (i % 3 === 0 || i % 7 === 2) owned[m.code] = 1;
+      else if (i % 11 === 4) wanted[m.code] = 1;
+    });
+    this.setState({ owned, wanted });
   }
 
   all() {
@@ -843,7 +945,7 @@ class Component extends DCLogic {
           : 'display:none',
         cardStyle: 'position:relative;padding:var(--space-2);gap:var(--space-2);' +
           (on ? 'background:var(--color-surface)' : 'background:color-mix(in srgb,var(--color-surface) 55%,var(--color-bg))'),
-        boxStyleFloat: 'position:absolute;top:var(--space-2);right:var(--space-2);width:34px;height:34px;padding:0;' +
+        boxStyleFloat: 'position:absolute;bottom:var(--space-2);right:var(--space-2);width:34px;height:34px;padding:0;' +
           'display:grid;place-items:center;cursor:pointer;z-index:3;border:2px solid ' +
           (on ? 'var(--color-accent);background:var(--color-accent);color:var(--color-bg)'
               : 'color-mix(in srgb,var(--color-bg) 60%,transparent);background:color-mix(in srgb,var(--color-neutral-900) 45%,transparent);color:transparent'),
@@ -852,14 +954,15 @@ class Component extends DCLogic {
         toggleWant: this.toggleWanted(m.code),
         wantTitle: want ? 'Stop looking for this' : 'I am looking for this',
         wantedStyle: want
-          ? 'position:absolute;left:0;right:0;bottom:0;z-index:3;background:var(--color-accent);color:var(--color-bg);' +
-            'font-family:var(--font-heading);font-weight:var(--font-heading-weight);font-size:9px;letter-spacing:.16em;padding:3px 6px'
+          ? 'position:absolute;left:0;right:0;top:0;z-index:3;background:var(--color-accent);color:var(--color-bg);' +
+            'font-family:var(--font-heading);font-weight:800;font-size:9px;letter-spacing:.16em;text-transform:uppercase;' +
+            'padding:3px 6px;line-height:10px;text-align:left'
           : 'display:none',
         huntStyle: on
           ? 'display:none'
-          : 'position:absolute;top:calc(var(--space-2) + 40px);right:var(--space-2);width:34px;height:34px;padding:0;' +
+          : 'position:absolute;bottom:calc(var(--space-2) + 40px);right:var(--space-2);width:34px;height:34px;padding:0;' +
             'display:grid;place-items:center;cursor:pointer;z-index:3;border:2px solid ' +
-            (want ? 'var(--color-accent);background:var(--color-accent);color:var(--color-bg)'
+            (want ? 'var(--color-accent);background:color-mix(in srgb,var(--color-neutral-900) 45%,transparent);color:var(--color-accent)'
                   : 'color-mix(in srgb,var(--color-bg) 60%,transparent);background:color-mix(in srgb,var(--color-neutral-900) 45%,transparent);color:color-mix(in srgb,var(--color-bg) 70%,transparent)')
       });
     };
@@ -887,9 +990,33 @@ class Component extends DCLogic {
         .slice().sort((a, b) => a[1].localeCompare(b[1], 'en', { numeric: true }));
       const inR = all.filter(m => m.rangeCode === r.code);
       const ownR = inR.filter(m => s.owned[m.code]).length;
+      const isOpen = s.openRanges[r.code] !== false;
       return {
         code: r.code, name: r.name, genre: r.genre,
-        meta: (n => n + (n === 1 ? ' set' : ' sets'))(setsIn.length) + ' · ' + nf(r.total) + ' miniatures',
+        isOpen,
+        emptyBody: 'Nothing has been catalogued under ' + r.name + '.',
+        bodyId: 'range-sets-' + r.code,
+        toggleGlyph: isOpen ? 'remove' : 'add',
+        sectionStyle: 'margin-bottom:' + (isOpen ? '44px' : '0') + ';user-select:none',
+        headStyle: 'width:100%;color:var(--color-text);border:0;border-bottom:2px solid var(--color-divider);' +
+          'text-align:left;cursor:pointer;display:flex;align-items:baseline;gap:12px;padding:13px 16px;' +
+          'margin-bottom:' + (isOpen ? '18px' : '0'),
+        toggleRange: (e) => {
+          if (e && e.preventDefault) e.preventDefault();
+          this.setState(st => {
+            const openRanges = Object.assign({}, st.openRanges);
+            openRanges[r.code] = st.openRanges[r.code] === false;
+            return { openRanges };
+          });
+        },
+        bodyStyle: isOpen
+          ? 'display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:22px'
+          : 'display:none',
+        emptyStyle: isOpen && setsIn.length === 0
+          ? 'padding:22px 0 26px;border-top:2px solid var(--color-divider)'
+          : 'display:none',
+        meta: (n => n + (n === 1 ? ' set' : ' sets'))(setsIn.length) + ' · ' +
+          (n => nf(n) + (n === 1 ? ' miniature' : ' miniatures'))(inR.length),
         rangeCode: r.code,
         ownedLabel: ownR + ' / ' + inR.length + ' owned',
         sets: setsIn.map(([, code, name]) => {
@@ -910,15 +1037,15 @@ class Component extends DCLogic {
       };
     });
 
-    const rangeSectionsShown = rangeSections.filter(r => r.sets.length > 0);
+    const rangeSectionsShown = rangeSections;
     const genreSections = this.genres
       .map(name => ({ name, ranges: rangeSectionsShown.filter(r => r.genre === name) }))
       .filter(g => g.ranges.length > 0);
     const curSet = s.setFilter ? all.filter(m => m.setCode === s.setFilter) : [];
     const curOwn = curSet.filter(m => s.owned[m.code]).length;
 
-    const tree = this.ranges.slice().sort((a, b) => a.name.localeCompare(b.name, 'en')).map(r => ({
-      name: r.name, count: nf(r.total),
+    const treeOf = (rs) => rs.map(r => ({
+      name: r.name, count: nf(all.filter(m => m.rangeCode === r.code).length),
       expanded: !!s.expanded[r.code],
       caretStyle: 'display:inline-block;transition:transform .12s;transform:rotate(' + (s.expanded[r.code] ? 90 : 0) + 'deg);color:color-mix(in srgb,var(--color-text) 45%,transparent)',
       toggle: () => this.setState(st => ({ expanded: Object.assign({}, st.expanded, { [r.code]: !st.expanded[r.code] }) })),
@@ -935,6 +1062,13 @@ class Component extends DCLogic {
       })
     }));
 
+    const railGroups = this.genres
+      .map(name => ({
+        name,
+        ranges: treeOf(this.ranges.filter(r => r.genre === name).slice()
+          .sort((a, b) => a.name.localeCompare(b.name, 'en')))
+      }))
+      .filter(g => g.ranges.length > 0);
 
     const adminSetCode = s.adminSetId;
     const adminSetMeta = this.sets.find(x => x[1] === adminSetCode);
@@ -976,7 +1110,46 @@ class Component extends DCLogic {
     const gap = density === 'Contact sheet' ? '12px' : (density === 'Comfortable' ? '24px' : '18px');
     const ownedTotal = Object.keys(s.owned).length;
 
+    const wantedList = all.filter(m => !s.owned[m.code] && s.wanted[m.code]).slice()
+      .sort((a, b) => a.setCode.localeCompare(b.setCode, 'en', { numeric: true }) ||
+                      a.code.localeCompare(b.code, 'en', { numeric: true }));
+    const wantedItems = wantedList.map(m => Object.assign(decorate(m), {
+      setLabel: m.setCode + ' · ' + (((this.sets.find(x => x[1] === m.setCode) || [])[2]) || ''),
+      photoStyle: this.photoStyle(true, this.photoFor(m.code, m.photo)),
+      cardStyle: 'position:relative;padding:var(--space-2);gap:var(--space-2);background:var(--color-surface)',
+      nameStyle: 'display:block;font-family:var(--font-heading);font-weight:var(--font-heading-weight);font-size:11.5px;line-height:1.2;color:var(--color-text)',
+      codeStyle: 'font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;color:var(--color-accent-700)'
+    }));
+    const navLink = (active) => 'text-decoration:none;font-family:var(--font-heading);font-weight:var(--font-heading-weight);' +
+      'font-size:13px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:7px;padding:3px 0;' +
+      (active ? 'color:var(--color-accent);box-shadow:inset 0 -2px 0 var(--color-accent)' : 'color:var(--color-text)');
+
     return {
+      isWanted: s.screen === 'wanted',
+      hasWanted: s.screen === 'wanted' && wantedItems.length > 0,
+      noWanted: s.screen === 'wanted' && wantedItems.length === 0,
+      wantedItems,
+      wantedGenres: this.genres.map(name => {
+        const items = wantedItems.filter(w => ((this.ranges.find(r => r.code === w.rangeCode) || {}).genre) === name);
+        return {
+          name, items,
+          meta: items.length + (items.length === 1 ? ' sought' : ' sought')
+        };
+      }).filter(g => g.items.length > 0),
+      wantedCount: nf(wantedList.length),
+      goWanted: this.go('wanted'),
+      showPublicNav: s.screen === 'browse' || s.screen === 'wanted',
+      navCatalogueStyle: navLink(s.screen === 'browse'),
+      navAdminStyle: navLink(s.screen === 'admin'),
+      navBackStyle: 'text-decoration:none;font-size:12.5px;letter-spacing:.04em;display:inline-flex;align-items:center;gap:5px;' +
+        'color:color-mix(in srgb,var(--color-text) 58%,transparent)',
+      signOutStyle: 'flex:none;text-decoration:none;font-size:12.5px;letter-spacing:.04em;white-space:nowrap;' +
+        'color:color-mix(in srgb,var(--color-text) 52%,transparent)',
+      navWantedStyle: navLink(s.screen === 'wanted'),
+      navWantedCountStyle: 'font-family:var(--font-body);font-size:10px;letter-spacing:.06em;padding:1px 5px;' +
+        (s.screen === 'wanted'
+          ? 'background:var(--color-accent);color:var(--color-bg)'
+          : 'background:color-mix(in srgb,var(--color-text) 10%,transparent);color:color-mix(in srgb,var(--color-text) 60%,transparent)'),
       isPublic: s.screen !== 'admin',
       isAuth: s.screen === 'auth',
       isBrowseLike: s.screen === 'browse',
@@ -1001,9 +1174,6 @@ class Component extends DCLogic {
       signedIn: signed, signedOut: !signed,
       showSignInButton: !signed && s.screen !== 'auth',
       showHeader: true,
-      headerNavLabel: s.screen === 'admin' ? 'Public site' : 'Admin',
-      headerNavIconStyle: s.screen === 'admin' ? 'font-size:16px' : 'display:none',
-      headerNav: s.screen === 'admin' ? this.go('browse', { setFilter: null }) : this.go('admin', { adminSetId: null }),
       openLogin: (e) => { this.stop(e); window.scrollTo(0, 0); this.setState({ screen: 'auth', authMode: 'in' }); },
       signIn: (e) => { this.stop(e); window.scrollTo(0, 0); this.setState({ signedIn: true, screen: 'browse' }); },
       authTabs: [['in', 'Sign in'], ['up', 'Create account']].map(([mode, label], i) => ({
@@ -1039,15 +1209,17 @@ class Component extends DCLogic {
       noopChange: () => {},
       query: s.query,
       onQuery: (e) => this.setState({ query: e.target.value, page: 1 }),
-      tree, setGroups, adminRows, adminRanges, adminSet, onDragEnd: this.endDrag,
+tree: railGroups, setGroups, adminRows, adminRanges, adminSet, onDragEnd: this.endDrag,
       adminSetEmpty: !!adminSetCode && adminRows.length === 0,
       adminSetHasRows: adminRows.length > 0,
       pageHeadStyle: 'display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:20px;' +
         (isSetPage ? 'padding-bottom:14px;border-bottom:2px solid var(--color-divider)' : ''),
-      emptyTitle: (s.ownedOnly || s.missingOnly || s.wantedOnly) ? 'Nothing matches this filter' : 'No miniatures in this set yet',
-      emptyBody: (s.ownedOnly || s.missingOnly || s.wantedOnly)
-        ? 'Switch back to All to see the whole set.'
-        : 'This set is catalogued but its miniatures have not been added.',
+      emptyTitle: s.wantedOnly ? 'Nothing on the hunt in this set'
+        : (s.ownedOnly || s.missingOnly) ? 'Nothing matches this filter'
+        : 'No miniatures in this set yet',
+      emptyBody: s.wantedOnly ? 'Mark a miniature with the crosshair to start looking for it.'
+        : (s.ownedOnly || s.missingOnly) ? 'Switch back to All to see the rest of the set.'
+        : 'The set is catalogued, but nothing has been photographed into it.',
       confirmOpen: !!s.confirm,
       confirm: this.confirmCopy(all),
       closeConfirm: () => this.setState({ confirm: null }),
@@ -1086,12 +1258,11 @@ class Component extends DCLogic {
         ? (rn => (rn ? rn + ' · ' : '') + s.setFilter)(
             (this.ranges.find(r => r.code === ((this.sets.find(x => x[1] === s.setFilter) || [])[0])) || {}).name || ''
           )
-        : 'The whole archive',
-      heading: s.setFilter ? (this.sets.find(x => x[1] === s.setFilter) || [])[2] : 'Every set, 1984—1992',
-      blurb: s.setFilter
-        ? ''
-        : 'Every boxed set and blister line, grouped by range. Open a set to see its miniatures. Scanned from the original catalogues and cross-checked against the boxed sets. Sign in and tick what is already in the drawer — the archive remembers, so you stop buying the same goblin twice.',
-      totalLabel: '5,318', setTotalLabel: '412',
+        : 'Citadel Miniatures',
+      heading: s.setFilter ? (this.sets.find(x => x[1] === s.setFilter) || [])[2] : '’EAVY METAL',
+      blurb: s.setFilter ? '' : 'My collection of Oldhammer miniatures.',
+      totalLabel: nf(all.length),
+      setTotalLabel: nf(rangeSectionsShown.reduce((n, r) => n + r.sets.length, 0)),
       ownedCount: nf(ownedTotal),
       ownedTotalLabel: ownedTotal + ' ticked',
       resultLabel: isIndex

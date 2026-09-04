@@ -4,11 +4,12 @@
 
 A catalogue of classic Citadel ("Oldhammer") miniatures with a personal collection layer on top. Visitors browse ranges and sets; a signed-in collector ticks off the castings they own and flags the ones they are actively hunting for. A small admin area maintains the catalogue itself (ranges, sets, and the miniatures inside each set).
 
-Three surfaces:
+Four surfaces:
 
-1. **Public catalogue** — sets index (grouped by genre → range) and a set page showing that set's miniatures as a photographic grid.
-2. **Admin** — ranges & sets management, a per-set miniature table, and a miniature editor drawer.
-3. **Auth** — combined sign-in / sign-up page.
+1. **Public collection** — sets index (grouped by genre → range) and a set page showing that set's miniatures as a photographic grid.
+2. **Public wanted page** — a shareable "help me find these" list of every miniature flagged as wanted, across all ranges and sets.
+3. **Admin** — ranges & sets management, a per-set miniature table, and a miniature editor drawer.
+4. **Auth** — combined sign-in / sign-up page.
 
 ## About the Design Files
 
@@ -45,7 +46,8 @@ From `_ds/modernist/styles.css`. Use the variables, not the literals.
 | `--color-accent` | `#ec3013` | The single accent — set codes, primary buttons, progress bars, WANTED |
 | `--color-accent-100` | `#fff2ef` | Hover tint on set cards, danger icon-button hover |
 | `--color-accent-600` | `#dd2b0f` | Pressed accent |
-| `--color-accent-700` | `#ae1800` | Accent text at paragraph size, link hover |
+| `--color-accent-700` | `#ae1800` | **All links** and any accent text at paragraph size |
+| `--color-accent-800` | — | Link hover |
 | `--color-divider` | `#201e1d` @ 40% | All rules |
 | `--color-neutral-300` | `#d7d3d3` | Progress bar track |
 | `--color-neutral-900` | `#2d2b2b` | Photo plate ground, modal/drawer scrim base |
@@ -76,13 +78,18 @@ Scale as used: page `h1` **44px/1** (auth 46px/1.02), `h2` default, range headin
 
 Sticky, `z-index: 30`, `--color-bg`, `border-bottom: 2px solid --color-divider`, height **53px** (padding `12px 26px`) — several sticky offsets depend on that 53px, so keep it or make it a variable.
 
-- Left: brand lockup, `<a>` back to the catalogue. "LEAD LEDGER" in heading font, **20px**, weight 800, `letter-spacing -.02em`, uppercase. Beside it a subtitle at **10px** uppercase `.08em`, text @45%.
-- Right, signed in: ghost "Sign out" + secondary button that navigates between public and admin (label and a leading `arrow_back` glyph both change by context).
-- Right, signed out: secondary "Sign in".
+- Left: brand lockup, `<a>` back to the collection. "LEAD LEDGER" in heading font, **20px**, weight 800, `letter-spacing -.02em`, uppercase. Beside it a subtitle at **10px** uppercase `.08em`, text @45%.
+- **Nav** (right of the brand, `flex`, gap 20px): text links, heading font **13px**, `.04em`, no button chrome — **Collection**, then **Wanted** carrying a count chip, then (signed in only) a 1px × 15px divider @20% and **Admin**. The active link is `--color-accent` with `box-shadow: inset 0 -2px 0 var(--color-accent)` — a 2px underline, not a fill. Inactive links are full ink.
+  - The Wanted count chip: body font **10px** `.06em`, `padding: 1px 5px`; on the active link it is an accent fill with `--color-bg` text, otherwise `--color-text` @10% fill with @60% text.
+  - On the admin screen the nav becomes **"← Public site"** (a quiet 12.5px link @58% with a 15px `arrow_back` glyph) + divider + the active **Admin**.
+- Far right, signed in: **"Sign out"** as a quiet text link — 12.5px, `--color-text` @52%, hover `--color-accent`. Deliberately not a button: it is the rarest action on the site and should not compete with navigation.
+- Far right, signed out: secondary **"Sign in"** button (the one real CTA in the header).
 
-At ≤900px the header drops to `10px 16px`, gap 12px, and the brand subtitle hides.
+At ≤900px the header wraps to two rows: brand + account on the first, and the whole nav on its own full-width row below (`flex-basis: 100%`, negative side margins so it spans edge to edge, 1px top rule @12%, links at **14px** with `padding: 11px 0 9px`). With only two or three destinations this beats a drawer — nothing is hidden behind a tap.
 
 > **Copy fix pending:** the subtitle currently reads "Oldhammer archive", which is left over from an earlier archive-framing brief; the page blurb says "My collection of Oldhammer miniatures". Pick one voice before shipping.
+
+> **Sticky offsets:** the mobile header is taller than 53px because of the nav row, but several `top: 53px` sticky offsets are still hard-coded. Drive them from a measured header height on port.
 
 ### 1. Sets index (public, default)
 
@@ -94,9 +101,9 @@ Page head — flex row, baseline-ends, gap 30px:
 - Kicker: **10px** uppercase `.08em` in `--color-accent`.
 - `h1` **44px/1**, margin `0 0 5px`.
 - Blurb: **13.5px/1.55**, text @60%, `max-width: 58ch`, `text-wrap: pretty`.
-- Stat row (right, `flex: none`, gap 24px, right-aligned): three figures at **26px/1** over **9.5px** uppercase labels @50% — "Miniatures", "Sets", and "You own" (this third figure in `--color-accent`).
+- Stat row (right, `flex: none`, gap 24px, right-aligned): four figures at heading-font **26px/1** over **9.5px** uppercase `.08em` labels — **Miniatures**, **Sets**, **Owned**, **Wanted**. The first three are full ink over @50% labels. **Wanted is the only accent pair** — figure *and* label both `--color-accent` — and the whole stat is a link to the wanted page. Owned is deliberately *not* red: three coloured figures in a row cancel each other out.
 
-Then **genre sections** (`margin-bottom: 52px`). Each opens with a label: `border-top: 2px solid --color-divider`, `padding-top: 9px`, `margin-bottom: 26px`, text **11px** uppercase `.1em` at `--color-text` @ **55%** (a muted ink — deliberately quiet, *not* accent red; genres are scaffolding, not controls).
+Then **genre sections**. Each opens with an `h2` heading — heading font at weight **400** (not 800), **14px**, uppercase, `letter-spacing: .1em`, `--color-text` @ **55%**, `padding-top: 16px`, `margin: 26px 0 18px`. A muted ink — deliberately quiet, *not* accent red; genres are scaffolding, not controls. **No rule under it**: the range head immediately below carries its own 2px rule, and two stacked rules read as noise. (This was tried and reverted — don't reintroduce it.)
 
 Inside a genre, one `<section>` per range (`margin-bottom: 44px`):
 - Range head: flex baseline row, `padding-bottom: 9px`, `border-bottom: 2px` , `margin-bottom: 18px`. `h3` **24px**; meta "N sets · N miniatures" at **11px** @48%; right-aligned "N / N OWNED" at **11px** uppercase `.1em` @50%.
@@ -134,23 +141,55 @@ The **plate**: `aspect-ratio: 3/4`, `overflow: hidden`, ground `--color-neutral-
 - Photo layer: cover-positioned background image, `transition: opacity .18s, filter .18s`.
   - Owned: `opacity: 1; filter: grayscale(1) contrast(1.08)`.
   - Not owned: `opacity: .3; filter: grayscale(1) contrast(.9)` — present but recessed, so the grid reads as a map of the gaps.
-- **Owned toggle** (top-right, `top/right: var(--space-2)`, 34×34, `z-index: 3`, `border: 2px`, `display: grid; place-items: center`):
+- **Owned toggle** (bottom-right, `bottom/right: var(--space-2)`, 34×34, `z-index: 3`, `border: 2px`, `display: grid; place-items: center`):
   - Owned: accent border + accent fill, `--color-bg` tick, tick `opacity: 1`.
   - Not owned: border `--color-bg` @60%, fill `--color-neutral-900` @45%, tick `opacity: 0` (an empty box over the photo).
   - Tick icon: 22px inline SVG, `stroke-width: 3`, `stroke-linecap: square`, path `m5 12.5 4.5 4.5L19 7`.
-- **Wanted toggle** (the "actively looking for this" control) — a second 34×34 square directly below the owned box at `top: calc(var(--space-2) + 40px)`, same right edge, same border treatment:
+- **Wanted toggle** (the "actively looking for this" control) — a second 34×34 square directly above the owned box at `bottom: calc(var(--space-2) + 40px)`, same right edge, same border treatment:
   - **Only rendered when the miniature is not owned** (`display: none` when owned) — owning something ends the hunt.
-  - Wanted: accent border + accent fill, `--color-bg` glyph. Not wanted: border `--color-bg` @60%, fill `--color-neutral-900` @45%, glyph `--color-bg` @70% (visible but quiet — unlike the tick, the crosshair always shows so the affordance is discoverable).
+  - Wanted: **accent border, dark fill (`--color-neutral-900` @45%), accent glyph** — an outlined crosshair, lit. Not wanted: border `--color-bg` @60%, same dark fill, glyph `--color-bg` @70% (visible but quiet — unlike the tick, the crosshair always shows so the affordance is discoverable).
   - Icon: 18px crosshair, `stroke-width: 2.4`, `stroke-linecap: square` — `<circle cx=12 cy=12 r=7>` plus four ticks `M12 1v3 M12 20v3 M1 12h3 M20 12h3`.
   - `title` is "I am looking for this" / "Stop looking for this".
-- **WANTED strip** — when wanted, a full-width bar pinned to the bottom of the plate (`left/right/bottom: 0`, `z-index: 3`): `--color-accent` fill, `--color-bg` text, heading font weight 800, **9px**, `letter-spacing: .16em`, `padding: 3px 6px`, label flush left. This is the state's at-a-glance signal in a dense grid.
+- **WANTED strip** — when wanted, a full-width bar pinned to the **top** of the plate (`left/right/top: 0`, `z-index: 3`): `--color-accent` fill, `--color-bg` text, heading font weight 800, **9px**, `letter-spacing: .16em`, `padding: 3px 6px`, label flush left. This is the state's at-a-glance signal in a dense grid.
 - Two alternative owned-marks exist behind a prop (see Props below): a rotated "OWNED" **stamp** (3px accent border, `rotate(-12deg)`, accent text 15px `.14em`) and a **corner fold** (30px accent triangle, top-right). Default is the checkbox.
 
 Caption below the plate: code at **10px** uppercase `.1em` (accent-700 when owned, text @40% when not), name in heading font **11.5px/1.2** (full ink when owned, text @52% when not). Both are individually toggleable via props; a "No info" label at 10px @32% covers the caption-off case.
 
 **Empty state** — `padding: 56px 0` between two 2px rules; heading font 20px title + 13px body @55%. Copy varies: filtered-to-nothing ("Nothing matches this filter" / "Switch back to All to see the whole set.") vs. an unpopulated set ("No miniatures in this set yet" / "This set is catalogued but its miniatures have not been added.").
 
-### 3. Admin — Ranges & sets
+### 3. Wanted (public)
+
+**Purpose:** a **shareable want ad**. Other collectors are the audience: someone who has never seen the site should be able to land here, scan the photographs, and know what to offer. It is not a filtered view of the collection — it is a different object, organised by what is *missing*.
+
+**Route:** its own page (`/wanted`), reachable from the header nav and from the "Wanted" stat on the index. Public — no sign-in needed to read it.
+
+**Layout:** single column, `max-width: 1320px`, centred, `padding: 30px 30px 0`.
+
+Page head — flex row, baseline-ends, gap 30px, `padding-bottom: 16px`, `border-bottom: 2px solid --color-divider`, `margin-bottom: 28px`:
+- `h1` **"Wanted"** at **60px/.94**, no kicker above it (tried and cut — the word carries the page).
+- Blurb, **14px/1.55** @62%, `max-width: 54ch`, `text-wrap: pretty`: "Miniatures I am still missing, across every range. Contact me at jonas@verdensmand.com if you have any of these for sale or trade." The address is a real `mailto:` link, rendered in `--color-accent-700` (paragraph-size accent text must use the deep ramp step, never `--color-accent` — 3.78:1 is too low for body copy).
+- Right: the wanted count as a display figure — heading font weight **800**, **56px/.9**, `--color-accent` — over a **9.5px** uppercase `.08em` label @50%, "Miniatures sought".
+
+**Grouping.** Despite being a flat list of miniatures (no range or set nesting), the items are grouped under the three **genre headings** — FANTASY, SCI-FI, SPECIALIST GAMES — styled exactly like the index's genre heads (heading font weight 400, 14px, uppercase `.1em`, @55%, no rule, `margin-bottom: 18px`), each in a `<section>` with `margin-bottom: 46px`. Genres with nothing wanted are omitted entirely. No per-genre count.
+
+**Grid** — the same miniature grid as the set page, driven by the same density values.
+
+**Cards are the same miniature card component**, with two deliberate differences:
+
+1. **Nothing is dimmed.** Every item here is unowned, so the set page's recessive treatment would push the whole page back. Photos render at owned strength (`opacity: 1`, `grayscale(1) contrast(1.08)`), the card sits on full `--color-surface`, the name is full ink and the code is `--color-accent-700`. The page is a want ad — the photographs are the ask.
+2. **A third caption line** below the name: the miniature's set, as `"{SET CODE} · {Set name}"` at **10px** uppercase `.06em` @48%, separated by `margin-top: 6px; padding-top: 6px; border-top: 1px solid--color-text` @12%. Code, name and set are all shown here regardless of the caption props.
+
+The red WANTED strip, the owned tick box and the lit crosshair all behave exactly as on the set page: ticking **owned** or clearing the **crosshair** removes the item from this page on the next render. (There is no separate "remove" affordance — an early cross-in-the-corner button was cut because unticking wanted *is* the exit, and it should use the same control as everywhere else.)
+
+**Sort:** by set code (numeric-aware), then miniature code, within each genre.
+
+**Empty state** — `padding: 64px 0` above a 2px rule: heading font **22px** "Nothing on the hunt", 13.5px/1.55 body @58% "Mark a miniature with the crosshair anywhere in the collection and it turns up here.", then a secondary **"Browse the collection"** button.
+
+**Closing poster** — the one place red runs as a field, per the design system. Full-bleed `--color-accent` band, `margin-top: 70px`, inner `max-width: 1320px`, `padding: 52px 30px 56px`, flex row, baseline-ends, wrapping: `h2` **"Got one of these?"** at **44px/1** in `--color-bg`, a 14px/1.55 line at `--color-bg` @88% ("Send the code and a photograph. I will pay postage either way, and I trade from the duplicates drawer."), and the email as an inverted block — `--color-bg` fill, `--color-accent` text, heading font 800 15px, `padding: 15px 22px`. At ≤900px: `padding: 34px 16px 38px`, `h2` 30px.
+
+> **Open:** the intro blurb and this poster now make the same ask twice. Keep one — the poster if the page is mainly shared as a link, the blurb if it is mainly read by people already on the site.
+
+### 4. Admin — Ranges & sets
 
 `display: grid; grid-template-columns: 200px minmax(0,1fr)`; min-height `calc(100vh - 53px)`.
 
@@ -160,7 +199,7 @@ Caption below the plate: code at **10px** uppercase `.1em` (accent-700 when owne
 
 Per range: `h3` 22px + uppercase meta @50%, then right-aligned secondary **"Edit range"** (`edit`) and primary **"Add set"** (`add`) at 12px. Below, a `.table` with columns Code (110px) / Set / Miniatures (130px); rows are clickable and hover-tinted (`--color-text` @4%). If a range has no sets: a 22px-padded block under a 2px rule — "No sets in this range yet" / "Add a set to start listing miniatures under {range}."
 
-### 4. Admin — Set detail
+### 5. Admin — Set detail
 
 Breadcrumb ("← Ranges & sets / Range name"), `h2` "{CODE} {Set name}", count line at 11px uppercase @50%, and secondary **"Edit set"** + primary **"Add miniature"**.
 
@@ -168,7 +207,7 @@ Table columns: drag handle (28px, `⠿`, `cursor: grab`), thumbnail (46px — a 
 
 Empty state: `padding: 34px 0` between 2px rules — "No miniatures in this set yet" / "Add the first casting and it appears in the public catalogue straight away."
 
-### 5. Admin — Miniature drawer
+### 6. Admin — Miniature drawer
 
 Right-hand sheet over a scrim (`--color-neutral-900` @42%, `z-index: 60`); clicking the scrim closes. Panel **480px** (`max-width: 92vw`), full height, scrollable, `--color-bg`, `border-left: 2px`, `--shadow-lg`, `padding: 22px 24px 40px`. Full-width ≤900px with no left border.
 
@@ -178,7 +217,7 @@ Right-hand sheet over a scrim (`--color-neutral-900` @42%, `z-index: 60`); click
 
 **Currently non-functional:** field edits don't persist and Save just closes. The upload is preview-only (object URL held in memory). Both need real wiring.
 
-### 6. Auth (sign in / sign up)
+### 7. Auth (sign in / sign up)
 
 Two equal columns, `min-height: calc(100vh - 53px)`; stacks ≤900px.
 
@@ -190,7 +229,7 @@ Left (`padding: 64px 56px`, `max-width: 560px`, vertically centred): accent kick
 
 Right (`--color-surface`, `border-left: 2px`, same padding): "WHAT AN ACCOUNT GIVES YOU" label, then three points, each `padding: 18px 0` under a 2px top rule — heading font 18px title over 13.5px/1.5 body @60% `max-width: 40ch`.
 
-### 7. Dialogs
+### 8. Dialogs
 
 Two modals, both `.dialog-backdrop` + `.dialog` from the design system:
 
@@ -203,7 +242,7 @@ Neither closes on **Esc** yet — add that, plus focus trapping and initial focu
 
 ## Interactions & Behaviour
 
-**Navigation** is state-driven, not routed. The prototype switches on a `screen` value (`browse` / `admin` / `auth`) plus a `setFilter` (the open set) and `adminSetId`. **Give each of these a real URL when porting**: e.g. `/`, `/sets/:setCode`, `/admin/ranges`, `/admin/sets/:setCode`, `/signin`. Every navigation scrolls the window to the top.
+**Navigation** is state-driven, not routed. The prototype switches on a `screen` value (`browse` / `wanted` / `admin` / `auth`) plus a `setFilter` (the open set) and `adminSetId`. **Give each of these a real URL when porting**: e.g. `/`, `/sets/:setCode`, `/wanted`, `/admin/ranges`, `/admin/sets/:setCode`, `/signin`. `/wanted` in particular is meant to be pasted into forum posts and messages, so it must be a real, stable, publicly readable URL. Every navigation scrolls the window to the top.
 
 **Owning a miniature** — click the plate or the tick box. If not signed in, the app scrolls to top and switches to the sign-in screen instead (the intent is not remembered — worth improving: resume the tick after auth). "Tick whole set" owns all miniatures in the set, or clears them all if every one is already owned.
 
@@ -232,7 +271,7 @@ Prototype state, and what it should become:
 | `owned: {code: 1}` | in-memory, seeded fake on mount | per-user persisted collection rows |
 | `wanted: {code: 1}` | in-memory | per-user wishlist rows |
 | `signedIn` | boolean | real session |
-| `screen`, `setFilter`, `adminSetId` | view switches | routes |
+| `screen`, `setFilter`, `adminSetId` | view switches | routes (`browse` / `wanted` / `admin` / `auth`) |
 | `expanded: {rangeCode: true}` | rail disclosure | local UI state (may persist) |
 | `ownedOnly` / `missingOnly` / `wantedOnly` | filter flags | one enum + query param |
 | `density` | grid density | local preference, persisted |
@@ -285,3 +324,6 @@ Ship the defaults: Compact + Checkbox + both caption lines.
 6. Real routes and deep links for every screen.
 7. Resume the intended tick after a sign-in interruption.
 8. Reconcile the header brand subtitle ("Oldhammer archive") with the collection framing.
+9. Decide whether the wanted page's intro ask or its closing red poster survives — currently both make the same request.
+10. The wanted page is public but the crosshair that removes an item is not gated by ownership of the *page*; on port, only the account that owns the list may edit it.
+11. Global `a` colour is `--color-accent-700` (not `--color-accent`) so in-copy links clear contrast at body size — keep that when porting the link styles.
