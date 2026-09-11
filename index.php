@@ -5,6 +5,7 @@
  *   /                          the sets index
  *   /{range-slug}/{set-code}   a set's photo grid
  *   /wanted                    the want ad — everything on the hunt
+ *   /for-trade                 the duplicates drawer — everything on offer
  *   /sign-in                   sign in / create account
  *   /admin                     ranges & sets
  *   /admin/sets/{id}           a set's miniatures
@@ -126,6 +127,40 @@ if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'wanted' && ctype_digi
     back_to();
 }
 
+// POST|PUT|DELETE /api/trade/{miniatureId}   idempotent for-trade toggle
+if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'trade' && ctype_digit($seg[2])) {
+    if (!in_array($method, ['POST', 'PUT', 'DELETE'], true)) {
+        json_fail('Use POST, PUT or DELETE.', 405);
+    }
+    csrf_guard();
+    require_admin(); // one drawer, and only an admin edits it
+
+    $miniId = (int)$seg[2];
+    $mini   = repo_miniature($miniId);
+    if (!$mini) {
+        json_fail('No such miniature.', 404);
+    }
+
+    if ($method === 'PUT') {
+        $trade = true;
+    } elseif ($method === 'DELETE') {
+        $trade = false;
+    } else {
+        $trade = (string)($_POST['trade'] ?? json_body()['trade'] ?? '1') === '1';
+    }
+
+    repo_set_trade($miniId, $trade);
+
+    if (is_json_request()) {
+        json_out([
+            'ok'          => true,
+            'trade'       => $trade,
+            'trade_count' => repo_trade_count_in_set((int)$mini['set_id']),
+        ]);
+    }
+    back_to();
+}
+
 // POST|PUT|DELETE /api/collection/{miniatureId}   idempotent owned toggle
 if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_digit($seg[2])) {
     if (!in_array($method, ['POST', 'PUT', 'DELETE'], true)) {
@@ -153,8 +188,13 @@ if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_
 
     // Owning something ends the hunt — the wanted row goes rather than lying
     // dormant. Un-ticking later does not resurrect it.
+    //
+    // Releasing it is the mirror: you cannot trade what you no longer have,
+    // so the offer goes with the tick.
     if ($wanted) {
         repo_set_wanted($miniId, false);
+    } else {
+        repo_set_trade($miniId, false);
     }
 
     if (is_json_request()) {
@@ -164,6 +204,7 @@ if (count($seg) === 3 && $seg[0] === 'api' && $seg[1] === 'collection' && ctype_
             'owned'        => $wanted,
             'owned_count'  => repo_owned_count_in_set($setId),
             'wanted_count' => repo_wanted_count_in_set($setId),
+            'trade_count'  => repo_trade_count_in_set($setId),
             'total'        => repo_count_in_set($setId),
         ]);
     }
@@ -486,6 +527,20 @@ if ($seg === ['wanted']) {
         'title'   => 'Wanted',
         'screen'  => 'wanted',
         'wanted'  => repo_wanted(),
+        'density' => density(),
+        'contact' => contact_email(),
+    ]);
+    exit;
+}
+
+// GET /for-trade
+// The want ad's mirror, and shareable for the same reason — it gets pasted
+// into the same forum posts and messages.
+if ($seg === ['for-trade']) {
+    render('public/trade', [
+        'title'   => 'For trade',
+        'screen'  => 'trade',
+        'trade'   => repo_trade(),
         'density' => density(),
         'contact' => contact_email(),
     ]);

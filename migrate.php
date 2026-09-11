@@ -20,6 +20,7 @@ $sets   = $prefix . 'sets';
 $own    = $prefix . 'ownership';
 $ranges = $prefix . 'ranges';
 $want   = $prefix . 'wanted';
+$trade  = $prefix . 'trade';
 $steps  = [];
 $fatal  = null;
 $ran    = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
@@ -281,6 +282,58 @@ try {
         }
     }
 
+    /* ── the duplicates drawer: a trade list beside the collection ── */
+
+    $tradeExists = false;
+    try {
+        db()->query('SELECT 1 FROM `' . $trade . '` LIMIT 1');
+        $tradeExists = true;
+    } catch (PDOException $ex) {
+        $tradeExists = false;
+    }
+
+    if ($tradeExists) {
+        step('skip', 'The trade list already exists.');
+    } elseif ($ran) {
+        db()->exec(
+            'CREATE TABLE `' . $trade . '` (
+               miniature_id INT UNSIGNED NOT NULL,
+               created_at   DATETIME     NOT NULL,
+               PRIMARY KEY (miniature_id),
+               CONSTRAINT `fk_trade_mini` FOREIGN KEY (miniature_id)
+                 REFERENCES `' . $minis . '` (id) ON DELETE CASCADE
+             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci'
+        );
+        step('good', 'Created ' . $trade . ' — miniatures can now be offered for trade.');
+    } else {
+        step('todo', $trade . ' will be created, so miniatures can be offered for trade.');
+    }
+
+    // A trade offer against something not owned is the mirror of a want
+    // against something owned: it cannot mean anything, so it goes.
+    if ($tradeExists) {
+        $orphan = (int)q(
+            'SELECT COUNT(*) AS n FROM `' . $trade . '` t
+        LEFT JOIN `' . $own . '` o ON o.miniature_id = t.miniature_id
+            WHERE o.miniature_id IS NULL'
+        )->fetch()['n'];
+
+        if ($orphan === 0) {
+            step('skip', 'No trade rows against miniatures that are not owned.');
+        } elseif ($ran) {
+            db()->exec(
+                'DELETE t FROM `' . $trade . '` t
+            LEFT JOIN `' . $own . '` o ON o.miniature_id = t.miniature_id
+                WHERE o.miniature_id IS NULL'
+            );
+            step('good', $orphan . ' trade ' . plural($orphan, 'row', 'rows')
+                . ' against miniatures no longer owned cleared — you can only trade what you have.');
+        } else {
+            step('todo', $orphan . ' trade ' . plural($orphan, 'row', 'rows')
+                . ' against miniatures that are not owned will be cleared.');
+        }
+    }
+
     /* ── ownership: one collection for the archive, not one per user ── */
 
     if (column($own, 'user_id') === null) {
@@ -349,7 +402,7 @@ $blocked = array_filter($steps, static fn($s) => $s[0] === 'bad');
       Brings the tables in line with the current schema: a miniature's photograph becomes its one
       required field, two sets in the same range become free to share a code, ownership becomes
       a single collection for the whole archive rather than one per account, ranges gain a
-      top-level category, and a wanted list sits beside the collection.
+      top-level category, and a wanted list and a trade list sit beside the collection.
     </p>
 
     <?php foreach ($steps as [$tone, $text]): ?>

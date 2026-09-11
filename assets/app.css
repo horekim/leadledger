@@ -81,6 +81,8 @@ a:hover { color: var(--color-accent-800); }
 .app-nav { display: flex; align-items: center; gap: 20px; flex: none; margin-right: 6px; }
 .nav-link {
   display: inline-flex; align-items: center; gap: 7px; padding: 3px 0;
+  /* Two words, one destination: "For trade" must never break across lines. */
+  white-space: nowrap;
   font-family: var(--font-heading); font-weight: var(--font-heading-weight);
   font-size: 13px; letter-spacing: .04em;
   text-decoration: none; color: var(--color-text);
@@ -395,10 +397,13 @@ details[open] > summary .tog-close { display: block; }
 .tick.is-static { cursor: default; }
 .tick.is-static svg { opacity: 1; }
 
-/* The hunt. A second square above the tick, and only while unowned — owning
-   something ends it. Unlike the tick the crosshair always shows, so the
-   affordance is discoverable rather than hidden until used. */
-.want {
+/* The hunt and the duplicates drawer. One square above the tick, shared:
+   the crosshair only means something while a miniature is unowned and the
+   swap only while it is owned, so the two never compete for the slot. Unlike
+   the tick they always show on their own side of it, so the affordance is
+   discoverable rather than hidden until used. */
+.want,
+.trade {
   grid-area: 1 / 1; justify-self: end; align-self: end; z-index: 3;
   margin: var(--space-2); margin-bottom: calc(var(--space-2) + 40px);
   width: 34px; height: 34px; display: grid; place-items: center; padding: 0;
@@ -414,26 +419,42 @@ details[open] > summary .tog-close { display: block; }
 .want.is-static {
   border-color: var(--color-accent); color: var(--color-accent);
 }
+/* On offer: solid ink, border and fill both, with a light glyph. Deliberately
+   not accent red — red is reserved for the hunt. */
+.trade[aria-pressed="true"],
+.trade.is-static {
+  border-color: var(--color-text); background: var(--color-text);
+  color: var(--color-bg);
+}
 /* Read-only, a wanted miniature is never also owned, so no tick sits below
-   the badge — it takes the corner rather than leaving a gap. */
+   the badge — it takes the corner rather than leaving a gap. A miniature on
+   offer always is owned, so the swap keeps its place above the tick. */
 .want.is-static { cursor: default; margin-bottom: var(--space-2); }
+.trade.is-static { cursor: default; }
 
-/* Owning ends the hunt. Hidden here rather than by the hidden attribute,
+/* Ownership decides which of the two is in the slot: owning ends the hunt,
+   releasing ends the offer. Hidden here rather than by the hidden attribute,
    which .mini-card form { display: contents } would outrank. */
 .mini-card.is-owned .want { display: none; }
+.mini-card:not(.is-owned) .trade { display: none; }
 
 /* The at-a-glance signal in a dense grid. It runs across the head of the
    plate, clear of the controls in the opposite corner. */
-.want-strip {
+.want-strip,
+.trade-strip {
   position: absolute; left: 0; right: 0; top: 0; z-index: 3;
   /* Stated rather than inherited: the owner's plate is a button, whose line
      height does not come from the page, and the visitor's is a div, whose
      does — the bar was 4px taller for visitors. */
   padding: 3px 6px; line-height: 10px; text-align: left;
-  background: var(--color-accent); color: var(--color-bg);
+  color: var(--color-bg);
   font-family: var(--font-heading); font-weight: 800;
   font-size: 9px; letter-spacing: .16em; text-transform: uppercase;
 }
+/* Two states, two colours, same shape: red = I want it, black = you can have
+   it. They can never collide — wanted requires unowned, trade requires owned. */
+.want-strip  { background: var(--color-accent); }
+.trade-strip { background: var(--color-text); }
 
 .mini-caption { display: flex; flex-direction: column; gap: 2px; text-align: left; }
 .mini-code {
@@ -454,40 +475,46 @@ details[open] > summary .tog-close { display: block; }
 .empty-state strong { display: block; font-family: var(--font-heading); font-weight: 400; font-size: 20px; margin-bottom: 4px; }
 .empty-state span { font-size: 13px; color: color-mix(in srgb, var(--color-text) 55%, transparent); }
 
-/* ── 4. Wanted — the want ad ── */
+/* ── 4. The two ads — Wanted, and For trade ── */
+
+/* One layout, two pages. They are the same document with the traffic running
+   the other way, so everything structural is shared and only the colour
+   differs: the want ad carries the accent, the trade list carries ink. */
 
 /* No bottom padding: the poster band closes the page, flush. */
-.page.is-wanted { padding: 30px 30px 0; }
+.page.is-ad { padding: 30px 30px 0; }
 
-.page-head.wanted-head { padding-bottom: 16px; margin-bottom: 28px; }
+.page-head.ad-head { padding-bottom: 16px; margin-bottom: 28px; }
 /* The word carries the page, so it runs bigger than any other h1 and takes
    no kicker above it. */
-.page-head.wanted-head h1 { font-size: 60px; line-height: .94; margin: 0 0 10px; }
-.page-head.wanted-head .page-blurb {
+.page-head.ad-head h1 { font-size: 60px; line-height: .94; margin: 0 0 10px; }
+.page-head.ad-head .page-blurb {
   font-size: 14px; max-width: 54ch;
   color: color-mix(in srgb, var(--color-text) 62%, transparent);
 }
-.wanted-tally { flex: none; text-align: right; }
-.wanted-tally-num {
+.ad-tally { flex: none; text-align: right; }
+/* Accent on both pages, even though the trade list's item state is black:
+   the figure is the page's one emphasis, not a state marker. */
+.ad-tally-num {
   font-family: var(--font-heading); font-weight: var(--font-heading-weight);
   font-size: 56px; line-height: .9; color: var(--color-accent);
 }
 
 /* The genre head is the index's, minus its own top spacing — the section
    gap governs here, and the page head already sets the first one off. */
-.wanted-genre { margin-bottom: 46px; }
-.wanted-genre .category-head { padding-top: 0; margin-top: 0; }
+.ad-genre { margin-bottom: 46px; }
+.ad-genre .category-head { padding-top: 0; margin-top: 0; }
 
-/* Nothing on this page is dimmed. Every item is unowned by definition, so the
-   set grid's recessive treatment would push the whole page back — and the
-   photographs are the ask. */
-.wanted-grid .mini-card { background: var(--color-surface); }
-.wanted-grid .mini-photo { opacity: 1; filter: grayscale(1) contrast(1.08); }
-.wanted-grid .mini-code { color: var(--color-accent-700); }
-.wanted-grid .mini-name { color: var(--color-text); }
+/* Nothing on either page is dimmed. Every card is at full strength — on the
+   want ad because the photographs are the ask, on the trade list because
+   everything there is owned anyway. */
+.ad-grid .mini-card { background: var(--color-surface); }
+.ad-grid .mini-photo { opacity: 1; filter: grayscale(1) contrast(1.08); }
+.ad-grid .mini-code { color: var(--color-accent-700); }
+.ad-grid .mini-name { color: var(--color-text); }
 /* The set line is what tells a stranger which casting this is, so it shows at
    every density — including the contact sheet, which hides captions. */
-.mini-grid.wanted-grid[data-density] .mini-caption { display: flex; }
+.mini-grid.ad-grid[data-density] .mini-caption { display: flex; }
 .mini-set {
   margin-top: 6px; padding-top: 6px;
   border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
@@ -496,30 +523,30 @@ details[open] > summary .tog-close { display: block; }
   color: color-mix(in srgb, var(--color-text) 48%, transparent);
 }
 
-.empty-state.wanted-empty { padding: 64px 0; border-top: 0; }
-.wanted-empty .btn { margin-top: 20px; }
+.empty-state.ad-empty { padding: 64px 0; border-top: 0; }
+.ad-empty .btn { margin-top: 20px; }
 
 /* The one place the accent runs as a field, per the design system. Full
    bleed, so it sits outside the page's own measure. */
-.wanted-band { margin-top: 70px; background: var(--color-accent); color: var(--color-bg); }
-.wanted-poster {
+.ad-band { margin-top: 70px; background: var(--color-accent); color: var(--color-bg); }
+.ad-poster {
   display: flex; align-items: flex-end; justify-content: space-between;
   flex-wrap: wrap; gap: 36px;
   max-width: 1320px; margin: 0 auto; padding: 52px 30px 56px;
 }
-.wanted-poster h2 { font-size: 44px; line-height: 1; margin: 0 0 8px; color: var(--color-bg); }
-.wanted-poster p {
+.ad-poster h2 { font-size: 44px; line-height: 1; margin: 0 0 8px; color: var(--color-bg); }
+.ad-poster p {
   margin: 0; max-width: 48ch; font-size: 14px; line-height: 1.55;
   color: color-mix(in srgb, var(--color-bg) 88%, transparent);
 }
 /* Inverted: the address is the button, and the band is its ground. */
-.wanted-mail {
+.ad-mail {
   flex: none; padding: 15px 22px; text-decoration: none;
   background: var(--color-bg); color: var(--color-accent);
   font-family: var(--font-heading); font-weight: var(--font-heading-weight);
   font-size: 15px; letter-spacing: .02em;
 }
-.wanted-mail:hover { color: var(--color-accent-600); }
+.ad-mail:hover { color: var(--color-accent-600); }
 
 /* ── 5/6. Admin shell ── */
 
@@ -749,18 +776,27 @@ tr.dragging { opacity: .45; }
   /* Basis is the border box, so a plain 100% stops 32px short of the screen
      once the negative margins pull it out — the rule above the row has to
      reach both edges, so ask for the padding back. */
+  /* A third public destination stopped fitting: the owner's row measures
+     407px against the 343px a 375px screen leaves. The band scrolls rather
+     than dragging the whole page sideways with it — still nothing hidden
+     behind a tap, only behind a swipe, and the rule above it still reaches
+     both edges. No scrollbar: the cut-off item is the cue, and a bar under a
+     40px row reads as damage. */
   .app-nav {
-    order: 3; flex-basis: calc(100% + 32px); gap: 22px;
+    order: 3; flex-basis: calc(100% + 32px); gap: 18px;
     margin: 0 -16px; padding: 0 16px;
     border-top: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
   }
+  .app-nav::-webkit-scrollbar { display: none; }
+  .app-nav > * { flex: none; }
   .app-nav .nav-link,
   .app-nav .nav-back { font-size: 14px; padding: 11px 0 9px; }
-  .page.is-wanted { padding: 20px 16px 0; }
-  .page-head.wanted-head h1 { font-size: 38px; }
-  .wanted-tally-num { font-size: 40px; }
-  .wanted-poster { padding: 34px 16px 38px; gap: 24px; }
-  .wanted-poster h2 { font-size: 30px; }
+  .page.is-ad { padding: 20px 16px 0; }
+  .page-head.ad-head h1 { font-size: 38px; }
+  .ad-tally-num { font-size: 40px; }
+  .ad-poster { padding: 34px 16px 38px; gap: 24px; }
+  .ad-poster h2 { font-size: 30px; }
   .shell { display: block; }
   .rail { display: none; }
   .page, .page-main { padding: 20px 16px 72px; }

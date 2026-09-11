@@ -100,20 +100,52 @@
 
   /* ── Owned ticks — optimistic, no confirmation, no toast ───────────────── */
 
-  /* Add or remove the WANTED bar across the head of a card's plate. */
-  function strip(card, on) {
+  /* The two states that hang off ownership, and everything the page needs to
+     draw either of them. They are mirrors: the crosshair only means something
+     while a miniature is unowned, the swap only while it is owned, so one
+     handler drives both and ownership decides which is on show. */
+  var FLAG = {
+    want: {
+      field: '[data-wanted-field]', btn: '.want', key: 'wanted',
+      strip: 'want-strip', label: 'Wanted',
+      off: 'I am looking for this', on: 'Stop looking for this'
+    },
+    trade: {
+      field: '[data-trade-field]', btn: '.trade', key: 'trade',
+      strip: 'trade-strip', label: 'For trade',
+      off: 'I have this for trade', on: 'Not for trade any more'
+    }
+  };
+
+  /* Add or remove one of the two bars across the head of a card's plate. */
+  function strip(card, kind, on) {
     var plate = card && $('.mini-plate', card);
     if (!plate) { return; }
-    var bar = $('.want-strip', plate);
+    var spec = FLAG[kind];
+    var bar  = $('.' + spec.strip, plate);
 
     if (on && !bar) {
       bar = document.createElement('span');
-      bar.className = 'want-strip';
+      bar.className = spec.strip;
       bar.setAttribute('aria-hidden', 'true');
-      bar.textContent = 'Wanted';
+      bar.textContent = spec.label;
       plate.appendChild(bar);
     } else if (!on && bar) {
       bar.parentNode.removeChild(bar);
+    }
+  }
+
+  /* Put one of the two controls back to off, after the server has cleared it. */
+  function clearFlag(card, kind) {
+    var spec = FLAG[kind];
+    var f = $(spec.field, card);
+    var b = $(spec.btn, card);
+
+    strip(card, kind, false);
+    if (f) { f.value = '1'; }
+    if (b) {
+      b.setAttribute('aria-pressed', 'false');
+      b.title = spec.off;
     }
   }
 
@@ -141,19 +173,11 @@
         .then(function (body) {
           ownedLine(body.owned_count, body.total);
 
-          // Owning something ends the hunt: the server clears the wanted row,
-          // so the strip goes and the control resets. The card's is-owned
-          // class hides and reveals it — no toggling needed here.
-          if (want) {
-            strip(card, false);
-            var f = $('[data-wanted-field]', card);
-            var b = $('.want', card);
-            if (f) { f.value = '1'; }
-            if (b) {
-              b.setAttribute('aria-pressed', 'false');
-              b.title = 'I am looking for this';
-            }
-          }
+          // Owning something ends the hunt, releasing it ends the offer: the
+          // server clears whichever side the tick just left, so that strip
+          // goes and its control resets. The card's is-owned class hides and
+          // reveals the pair — no toggling needed here.
+          clearFlag(card, want ? 'want' : 'trade');
         })
         .catch(function (err) {
           card.classList.toggle('is-owned', !want);
@@ -164,24 +188,32 @@
       return;
     }
 
-    // The hunt — the same optimistic flip as the tick.
-    if (form.matches('form[data-want]')) {
+    // The hunt and the drawer — the same optimistic flip as the tick.
+    var kind = form.matches('form[data-want]') ? 'want'
+             : form.matches('form[data-trade]') ? 'trade' : null;
+
+    if (kind) {
       ev.preventDefault();
-      var wcard  = form.closest('.mini-card');
-      var wfield = $('[data-wanted-field]', form);
-      var wbtn   = $('.want', form);
-      var hunted = wfield.value === '1';
+      var spec   = FLAG[kind];
+      var fcard  = form.closest('.mini-card');
+      var ffield = $(spec.field, form);
+      var fbtn   = $(spec.btn, form);
+      var marked = ffield.value === '1';
 
-      wfield.value = hunted ? '0' : '1';
-      wbtn.setAttribute('aria-pressed', hunted ? 'true' : 'false');
-      wbtn.title = hunted ? 'Stop looking for this' : 'I am looking for this';
-      strip(wcard, hunted);
+      ffield.value = marked ? '0' : '1';
+      fbtn.setAttribute('aria-pressed', marked ? 'true' : 'false');
+      fbtn.title = marked ? spec.on : spec.off;
+      strip(fcard, kind, marked);
 
-      post(form.action, { wanted: hunted ? '1' : '0' })
+      var payload = {};
+      payload[spec.key] = marked ? '1' : '0';
+
+      post(form.action, payload)
         .catch(function (err) {
-          wfield.value = hunted ? '1' : '0';
-          wbtn.setAttribute('aria-pressed', hunted ? 'false' : 'true');
-          strip(wcard, !hunted);
+          ffield.value = marked ? '1' : '0';
+          fbtn.setAttribute('aria-pressed', marked ? 'false' : 'true');
+          fbtn.title = marked ? spec.off : spec.on;
+          strip(fcard, kind, !marked);
           window.alert(err.message);
         });
     }

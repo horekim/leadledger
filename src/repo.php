@@ -190,12 +190,15 @@ function repo_miniatures(int $setId): array
 {
     $sql = 'SELECT m.id, m.code, m.name, m.photo, m.sort_index,
                    (o.miniature_id IS NOT NULL) AS owned,
-                   (w.miniature_id IS NOT NULL) AS wanted
+                   (w.miniature_id IS NOT NULL) AS wanted,
+                   (t.miniature_id IS NOT NULL) AS trade
               FROM ' . tbl('miniatures') . ' m
          LEFT JOIN ' . tbl('ownership') . ' o
                 ON o.miniature_id = m.id
          LEFT JOIN ' . tbl('wanted') . ' w
                 ON w.miniature_id = m.id
+         LEFT JOIN ' . tbl('trade') . ' t
+                ON t.miniature_id = m.id
              WHERE m.set_id = :sid
           ORDER BY m.sort_index ASC, m.id ASC';
 
@@ -203,9 +206,12 @@ function repo_miniatures(int $setId): array
     foreach ($rows as &$row) {
         $row['id']     = (int)$row['id'];
         $row['owned']  = (bool)$row['owned'];
-        // Ticking owned deletes the wanted row, so these should never both be
-        // set. Kept as a guard: an owned miniature never reads as wanted.
+        // Ticking owned deletes the wanted row and un-ticking deletes the
+        // trade row, so neither should ever disagree with ownership. Kept as
+        // a guard: an owned miniature never reads as wanted, and one that is
+        // not owned is never on offer.
         $row['wanted'] = !$row['owned'] && (bool)$row['wanted'];
+        $row['trade']  = $row['owned'] && (bool)$row['trade'];
     }
     unset($row);
     return $rows;
@@ -258,6 +264,33 @@ function repo_wanted_count_in_set(int $setId): int
     return (int)$row['n'];
 }
 
+/* — the duplicates drawer — the hunt's mirror, owned rather than sought — */
+
+function repo_set_trade(int $miniatureId, bool $trade): void
+{
+    if ($trade) {
+        q(
+            'INSERT IGNORE INTO ' . tbl('trade') . ' (miniature_id, created_at) VALUES (?, NOW())',
+            [$miniatureId]
+        );
+    } else {
+        q('DELETE FROM ' . tbl('trade') . ' WHERE miniature_id = ?', [$miniatureId]);
+    }
+}
+
+/** On offer only counts where it is actually owned. */
+function repo_trade_count_in_set(int $setId): int
+{
+    $row = q(
+        'SELECT COUNT(*) AS n FROM ' . tbl('trade') . ' t
+           JOIN ' . tbl('miniatures') . ' m ON m.id = t.miniature_id
+           JOIN ' . tbl('ownership') . ' o ON o.miniature_id = m.id
+          WHERE m.set_id = ?',
+        [$setId]
+    )->fetch();
+    return (int)$row['n'];
+}
+
 /* — the hunt, whole — what the wanted page shows — */
 
 /**
@@ -296,6 +329,7 @@ function repo_wanted(): array
         // The card markup is shared with the set page, which reads both.
         $row['owned']    = false;
         $row['wanted']   = true;
+        $row['trade']    = false;
         $row['category'] = category_valid((string)$row['range_category'])
             ? (string)$row['range_category']
             : LL_DEFAULT_CATEGORY;
@@ -312,20 +346,21 @@ function repo_wanted(): array
 }
 
 /**
- * The hunt grouped into its categories, in category order, dropping any that
- * hold nothing. Each group is ['key', 'label', 'items'].
+ * Miniatures grouped into their categories, in category order, dropping any
+ * that hold nothing. Each group is ['key', 'label', 'items'].
  *
- * Deliberately not repo_by_category(): that one groups ranges, and the wanted
- * page has no range level — the genre heading sits straight above the grid.
+ * Deliberately not repo_by_category(): that one groups ranges, and neither the
+ * wanted page nor the trade page has a range level — the genre heading sits
+ * straight above the grid.
  */
-function repo_wanted_by_category(array $wanted): array
+function repo_minis_by_category(array $minis): array
 {
     $groups = [];
     foreach (categories() as $key => $label) {
         $groups[$key] = ['key' => $key, 'label' => $label, 'items' => []];
     }
 
-    foreach ($wanted as $mini) {
+    foreach ($minis as $mini) {
         $groups[$mini['category']]['items'][] = $mini;
     }
 
@@ -345,6 +380,74 @@ function repo_wanted_total(): int
                JOIN ' . tbl('miniatures') . ' m ON m.id = w.miniature_id
           LEFT JOIN ' . tbl('ownership') . ' o ON o.miniature_id = m.id
               WHERE o.miniature_id IS NULL'
+        )->fetch();
+        $total = (int)$row['n'];
+    }
+    return $total;
+}
+
+/* — the drawer, whole — what the for-trade page shows — */
+
+/**
+ * Every miniature on offer, across the archive, with the set and range it came
+ * from. repo_wanted()'s mirror, down to the sort: the page is a flat list, so
+ * this is one query, and set codes need a natural sort MySQL has not got.
+ *
+ * The join to ownership is inner rather than left — you can only trade what
+ * you have, so a row against something released never shows as on offer.
+ */
+function repo_trade(): array
+{
+    $sql = 'SELECT m.id, m.code, m.name, m.photo,
+                   s.id       AS set_id,
+                   s.code     AS set_code,
+                   s.slug     AS set_slug,
+                   s.name     AS set_name,
+                   r.name     AS range_name,
+                   r.slug     AS range_slug,
+                   r.category AS range_category
+              FROM ' . tbl('trade') . ' t
+              JOIN ' . tbl('miniatures') . ' m ON m.id = t.miniature_id
+              JOIN ' . tbl('ownership') . ' o  ON o.miniature_id = m.id
+              JOIN ' . tbl('sets') . ' s       ON s.id = m.set_id
+              JOIN ' . tbl('ranges') . ' r     ON r.id = s.range_id';
+
+    $rows = q($sql)->fetchAll();
+
+    foreach ($rows as &$row) {
+        $row['id']       = (int)$row['id'];
+        $row['set_id']   = (int)$row['set_id'];
+        // The card markup is shared with the set page, which reads all three.
+        $row['owned']    = true;
+        $row['wanted']   = false;
+        $row['trade']    = true;
+        $row['category'] = category_valid((string)$row['range_category'])
+            ? (string)$row['range_category']
+            : LL_DEFAULT_CATEGORY;
+    }
+    unset($row);
+
+    usort($rows, static function (array $a, array $b): int {
+        return strnatcasecmp($a['set_code'], $b['set_code'])
+            ?: strnatcasecmp((string)$a['code'], (string)$b['code'])
+            ?: ($a['id'] <=> $b['id']);
+    });
+
+    return $rows;
+}
+
+/**
+ * How many miniatures are on offer. The header's count chip asks for this on
+ * every page, so the answer is held for the request.
+ */
+function repo_trade_total(): int
+{
+    static $total = null;
+    if ($total === null) {
+        $row = q(
+            'SELECT COUNT(*) AS n FROM ' . tbl('trade') . ' t
+               JOIN ' . tbl('miniatures') . ' m ON m.id = t.miniature_id
+               JOIN ' . tbl('ownership') . ' o  ON o.miniature_id = m.id'
         )->fetch();
         $total = (int)$row['n'];
     }

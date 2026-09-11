@@ -6,7 +6,7 @@ $message = flash();
 
 // The nav is the public site's own. Admin swaps it for a way back out, and
 // the auth page shows neither — there is one thing to do on it.
-$publicNav = $screen === 'browse' || $screen === 'wanted';
+$publicNav = in_array($screen, ['browse', 'wanted', 'trade'], true);
 $navLink   = static fn(bool $on): string => 'nav-link' . ($on ? ' is-active' : '');
 ?>
 <!DOCTYPE html>
@@ -38,11 +38,14 @@ $navLink   = static fn(bool $on): string => 'nav-link' . ($on ? ' is-active' : '
       <nav class="app-nav" aria-label="Sections">
         <a class="<?= e($navLink($screen === 'browse')) ?>" href="<?= e(url('')) ?>"
            <?= $screen === 'browse' ? 'aria-current="page"' : '' ?>>Collection</a>
-        <?php /* The count travels with the label: the hunt is the one number
-                 worth carrying on every page. */ ?>
+        <?php /* The count travels with the label: what is sought and what is
+                 spare are the two numbers worth carrying on every page. */ ?>
         <a class="<?= e($navLink($screen === 'wanted')) ?>" href="<?= e(url('wanted')) ?>"
            <?= $screen === 'wanted' ? 'aria-current="page"' : '' ?>>Wanted<span
            class="nav-count"><?= e(num(repo_wanted_total())) ?></span></a>
+        <a class="<?= e($navLink($screen === 'trade')) ?>" href="<?= e(url('for-trade')) ?>"
+           <?= $screen === 'trade' ? 'aria-current="page"' : '' ?>>For trade<span
+           class="nav-count"><?= e(num(repo_trade_total())) ?></span></a>
         <?php if ($admin): ?>
           <span class="nav-div" aria-hidden="true"></span>
           <a class="nav-link" href="<?= e(url('admin')) ?>">Admin</a>

@@ -74,6 +74,17 @@ CREATE TABLE IF NOT EXISTS ll_wanted (
     REFERENCES ll_miniatures (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- The duplicates drawer: miniatures offered for trade. The mirror of the hunt
+-- in every way, including its rule -- a trade row only means something while
+-- the miniature is owned, so releasing ownership deletes it.
+CREATE TABLE IF NOT EXISTS ll_trade (
+  miniature_id INT UNSIGNED NOT NULL,
+  created_at   DATETIME     NOT NULL,
+  PRIMARY KEY (miniature_id),
+  CONSTRAINT fk_trade_mini FOREIGN KEY (miniature_id)
+    REFERENCES ll_miniatures (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- One collection, the archive's own. Everyone sees the same ticks; only an
 -- admin can change them, so there is no user column.
 CREATE TABLE IF NOT EXISTS ll_ownership (
