@@ -21,6 +21,10 @@ $label    = ($m['owned'] ? 'Owned — ' : 'Not owned — ') . $what;
 $trade    = !empty($m['trade']);
 $controls = $controls ?? 'all';
 
+/* The for-trade page draws the swap on its own — no tick under it — so it
+   drops into the corner the tick would otherwise hold. */
+$solo = $controls === 'trade' ? ' is-solo' : '';
+
 /* Static markup, so built once here rather than repeated down the branches. */
 $svgTick  = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"'
           . ' stroke-width="3" stroke-linecap="square" aria-hidden="true">'
@@ -46,14 +50,14 @@ $wantBar   = $m['wanted'] ? '<span class="want-strip" aria-hidden="true">Wanted<
     <form method="post" action="<?= e(url('api/trade/' . $m['id'])) ?>" data-trade>
       <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
       <input type="hidden" name="trade" value="<?= $trade ? '0' : '1' ?>" data-trade-field>
-      <button type="submit" class="trade" aria-pressed="<?= $trade ? 'true' : 'false' ?>"
+      <button type="submit" class="trade<?= $solo ?>" aria-pressed="<?= $trade ? 'true' : 'false' ?>"
               title="<?= e($trade ? 'Not for trade any more' : 'I have this for trade') ?>"
               aria-label="<?= e(($trade ? 'Not for trade: ' : 'Offer for trade: ') . $what) ?>">
         <?= $svgSwap ?>
       </button>
     </form>
   <?php elseif ($trade): ?>
-    <span class="trade is-static" role="img" aria-label="For trade"><?= $svgSwap ?></span>
+    <span class="trade is-static<?= $solo ?>" role="img" aria-label="For trade"><?= $svgSwap ?></span>
   <?php endif; ?>
 
 <?php elseif ($canEdit): ?>
