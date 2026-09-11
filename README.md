@@ -31,7 +31,7 @@ carries the **`ll_`** prefix, so it can share a database with anything else.
 
        'db_prefix'     => 'll_',
        'site_name'     => 'Lead Ledger',
-       'contact_email' => 'you@example.com',  // the address the Wanted page asks people to write to
+       'contact_email' => 'you@example.com',  // the address Wanted and For trade ask people to write to
        'pretty_urls'   => true,       // false if .htaccess cannot be used
        'debug'         => false,
    ];
@@ -79,7 +79,7 @@ hostname it shows.
 | --- | --- |
 | `index.php` | Front controller — every route in one file |
 | `src/` | `db` (PDO + the `ll_` prefix), `auth`, `repo` (all SQL), `upload`, `view`, `helpers` |
-| `views/` | Plain PHP templates: `layout`, `public/`, `admin/`, `auth`. `public/_plate.php` is the miniature photograph and its two controls, shared by the set grid and the wanted page |
+| `views/` | Plain PHP templates: `layout`, `public/`, `admin/`, `auth`. `public/_plate.php` is the miniature photograph and its controls, shared by the set grid, the wanted page and the trade list |
 | `assets/ds/styles.css` | The Modernist design system, ported unchanged from the handoff |
 | `assets/app.css` | The project layer on top of it |
 | `assets/app.js` | Optimistic ticks, dialogs, the drawer, drag-reordering |
@@ -104,13 +104,15 @@ tells you when there is nothing left to do — delete it then.
 | `GET /` | The sets index — every set, grouped by range |
 | `GET /{range-slug}/{set-code}` | A set's photo grid |
 | `GET /wanted` | The want ad — every miniature on the hunt, grouped by genre. Public, and meant to be pasted into forum posts |
+| `GET /for-trade` | The trade list — every owned spare, same layout and same audience as the want ad |
 | `GET POST /sign-in` | Sign in / create account (`?mode=up`) |
 | `POST /sign-out` | |
 | `GET /admin` | All ranges, each with its sets |
 | `GET /admin/ranges/{id}` | One range's sets |
 | `GET /admin/sets/{id}` | A set's miniatures |
-| `POST /api/collection/{miniature}` | Toggle owned, admin only — idempotent, also accepts `PUT` / `DELETE`. Owning clears any wanted row |
+| `POST /api/collection/{miniature}` | Toggle owned, admin only — idempotent, also accepts `PUT` / `DELETE`. Owning clears any wanted row; releasing clears any trade row |
 | `POST /api/wanted/{miniature}` | Toggle wanted, admin only — same shape |
+| `POST /api/trade/{miniature}` | Toggle for-trade, admin only — same shape. Only meaningful while owned, so releasing ownership clears it |
 | `POST /admin/sets/{set}/reorder` | Persist a drag-reorder |
 
 Everything works without JavaScript — the ticks, filters, density switcher and
