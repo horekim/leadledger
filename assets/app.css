@@ -821,6 +821,14 @@ tr.dragging { opacity: .45; }
   .page-head h1 { font-size: 32px; }
   .stat-row { gap: 20px; text-align: left; }
   .filter-bar { position: static; }
+  /* Five options stopped fitting: the row measures 368px against the 343px a
+     375px screen leaves, and 320px is worse. The control scrolls on its own
+     rather than dragging the page sideways with it — the same answer the nav
+     row takes above, and the active option is the one you just tapped, so it
+     is already in view. */
+  .filter-bar .segmented { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .filter-bar .segmented::-webkit-scrollbar { display: none; }
+  .filter-bar .segmented > * { flex: none; }
   .admin-shell { display: block; }
   /* One row that says where you are, opening into a full-width list. It
      replaces a horizontal scroller that could hide the active range entirely. */

@@ -555,7 +555,7 @@ if (count($seg) === 2) {
     }
 
     $filter = $_GET['show'] ?? 'all';
-    if (!in_array($filter, ['all', 'owned', 'missing', 'wanted'], true)) {
+    if (!in_array($filter, ['all', 'owned', 'missing', 'wanted', 'trade'], true)) {
         $filter = 'all';
     }
 

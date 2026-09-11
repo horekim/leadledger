@@ -121,6 +121,14 @@ optimistic toggles, modal dialogs and drag-and-drop.
 
 ## Where this departs from the handoff
 
+**The set page filters on five states, not four.** The handoff's filter bar is
+All / Owned / Missing / Wanted; here it carries **For trade** as well, so a set
+can be read for spares the same way it is read for gaps. The fifth option takes
+the row past what a phone fits — 368px against the 343px a 375px screen leaves
+— so below 900px the control scrolls itself rather than pushing the page
+sideways, and `app.js` centres the active option on load, since the browser
+would otherwise start the row at the left and hide the filter you just chose.
+
 **Ownership is the archive's, not each visitor's.** The handoff makes ownership
 private per user — every collector keeps their own ledger. Here there is one
 collection: the ticks are the catalogue owner's, everyone sees them, and only an

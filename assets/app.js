@@ -61,6 +61,42 @@
     }
   }());
 
+  /* ── The filter row scrolls on a phone: keep the active option in view ─── */
+
+  /* Five options no longer fit a 375px screen, so the segmented control
+     scrolls itself rather than pushing the page sideways. The browser starts
+     it at scrollLeft 0, which leaves the option you just chose cut off past
+     the right edge — a filter bar showing no selection at all. Centre the
+     active one instead.
+
+     Measured again after the heading face arrives: the options are set in it,
+     so their widths move and an early answer can be 20px out. */
+  (function activeFilterInView() {
+    var rows = $$('.filter-bar .segmented');
+    if (!rows.length) { return; }
+
+    function centre() {
+      rows.forEach(function (seg) {
+        var on = $('.is-active', seg);
+        // Nothing to do when the whole row fits, which is every width above
+        // the breakpoint.
+        if (!on || seg.scrollWidth <= seg.clientWidth) { return; }
+
+        var segBox = seg.getBoundingClientRect();
+        var onBox  = on.getBoundingClientRect();
+        if (onBox.left >= segBox.left && onBox.right <= segBox.right) { return; }
+
+        seg.scrollLeft += (onBox.left - segBox.left)
+                        - (seg.clientWidth - onBox.width) / 2;
+      });
+    }
+
+    centre();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(centre);
+    }
+  }());
+
   /* ── Reading a miniature's name out of its filename ───────────────────── */
 
   var CODEY  = /^[a-z]{0,3}\d+[a-z]?$/i;

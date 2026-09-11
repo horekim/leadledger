@@ -17,6 +17,7 @@ $shown = array_values(array_filter($miniatures, static function (array $m) use (
     if ($filter === 'owned')   { return $m['owned']; }
     if ($filter === 'missing') { return !$m['owned']; }
     if ($filter === 'wanted')  { return $m['wanted']; }
+    if ($filter === 'trade')   { return $m['trade']; }
     return true;
 }));
 
@@ -88,6 +89,7 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
         <a class="<?= $filter === 'owned' ? 'is-active' : '' ?>"   href="<?= e($qs(['show' => 'owned'])) ?>">Owned</a>
         <a class="<?= $filter === 'missing' ? 'is-active' : '' ?>" href="<?= e($qs(['show' => 'missing'])) ?>">Missing</a>
         <a class="<?= $filter === 'wanted' ? 'is-active' : '' ?>"  href="<?= e($qs(['show' => 'wanted'])) ?>">Wanted</a>
+        <a class="<?= $filter === 'trade' ? 'is-active' : '' ?>"   href="<?= e($qs(['show' => 'trade'])) ?>">For trade</a>
       </div>
 
       <span class="result-count">Showing <?= e(num(count($shown))) ?> of <?= e(num($total)) ?></span>
@@ -107,6 +109,9 @@ $qs = static function (array $over) use ($here, $filter, $density): string {
         <?php elseif ($filter === 'wanted'): ?>
           <strong>Nothing on the hunt in this set</strong>
           <span>Mark a miniature with the crosshair to start looking for it.</span>
+        <?php elseif ($filter === 'trade'): ?>
+          <strong>Nothing spare in this set</strong>
+          <span>Mark an owned miniature with the swap to offer it for trade.</span>
         <?php else: ?>
           <strong>Nothing matches this filter</strong>
           <span>Switch back to All to see the rest of the set.</span>
