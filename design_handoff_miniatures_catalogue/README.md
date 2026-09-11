@@ -4,12 +4,13 @@
 
 A catalogue of classic Citadel ("Oldhammer") miniatures with a personal collection layer on top. Visitors browse ranges and sets; a signed-in collector ticks off the castings they own and flags the ones they are actively hunting for. A small admin area maintains the catalogue itself (ranges, sets, and the miniatures inside each set).
 
-Four surfaces:
+Five surfaces:
 
 1. **Public collection** — sets index (grouped by genre → range) and a set page showing that set's miniatures as a photographic grid.
 2. **Public wanted page** — a shareable "help me find these" list of every miniature flagged as wanted, across all ranges and sets.
-3. **Admin** — ranges & sets management, a per-set miniature table, and a miniature editor drawer.
-4. **Auth** — combined sign-in / sign-up page.
+3. **Public for-trade page** — the mirror image: a shareable list of owned duplicates the collector will swap or sell. Structurally identical to the wanted page.
+4. **Admin** — ranges & sets management, a per-set miniature table, and a miniature editor drawer.
+5. **Auth** — combined sign-in / sign-up page.
 
 ## About the Design Files
 
@@ -25,7 +26,7 @@ The task is to **recreate these designs in the target codebase's existing enviro
 
 Two things are deliberately fake in the prototype and must be built properly:
 
-- **Owned / wanted state is session-only** (in-memory objects, seeded with a fake pattern on mount). Needs real persistence per user.
+- **Owned / wanted / for-trade state is session-only** (in-memory objects, seeded with a fake pattern on mount). Needs real persistence per user.
 - **The miniature editor drawer does not save.** Its Code and Name inputs are read-only in practice (`onChange` is a no-op) and "Save miniature" just closes the drawer.
 
 Also note the aggregate counts in the index header ("5,318 miniatures", "412 sets") are hard-coded placeholders; they must be derived from real data.
@@ -79,13 +80,13 @@ Scale as used: page `h1` **44px/1** (auth 46px/1.02), `h2` default, range headin
 Sticky, `z-index: 30`, `--color-bg`, `border-bottom: 2px solid --color-divider`, height **53px** (padding `12px 26px`) — several sticky offsets depend on that 53px, so keep it or make it a variable.
 
 - Left: brand lockup, `<a>` back to the collection. "LEAD LEDGER" in heading font, **20px**, weight 800, `letter-spacing -.02em`, uppercase. Beside it a subtitle at **10px** uppercase `.08em`, text @45%.
-- **Nav** (right of the brand, `flex`, gap 20px): text links, heading font **13px**, `.04em`, no button chrome — **Collection**, then **Wanted** carrying a count chip, then (signed in only) a 1px × 15px divider @20% and **Admin**. The active link is `--color-accent` with `box-shadow: inset 0 -2px 0 var(--color-accent)` — a 2px underline, not a fill. Inactive links are full ink.
-  - The Wanted count chip: body font **10px** `.06em`, `padding: 1px 5px`; on the active link it is an accent fill with `--color-bg` text, otherwise `--color-text` @10% fill with @60% text.
+- **Nav** (right of the brand, `flex`, gap 20px): text links, heading font **13px**, `.04em`, no button chrome, `white-space: nowrap` (the two-word "For trade" must not wrap) — **Collection**, then **Wanted** carrying a count chip, then **For trade** carrying its own count chip, then (signed in only) a 1px × 15px divider @20% and **Admin**. The active link is `--color-accent` with `box-shadow: inset 0 -2px 0 var(--color-accent)` — a 2px underline, not a fill. Inactive links are full ink.
+  - The count chips (Wanted, For trade): body font **10px** `.06em`, `padding: 1px 5px`; on the active link it is an accent fill with `--color-bg` text, otherwise `--color-text` @10% fill with @60% text.
   - On the admin screen the nav becomes **"← Public site"** (a quiet 12.5px link @58% with a 15px `arrow_back` glyph) + divider + the active **Admin**.
 - Far right, signed in: **"Sign out"** as a quiet text link — 12.5px, `--color-text` @52%, hover `--color-accent`. Deliberately not a button: it is the rarest action on the site and should not compete with navigation.
 - Far right, signed out: secondary **"Sign in"** button (the one real CTA in the header).
 
-At ≤900px the header wraps to two rows: brand + account on the first, and the whole nav on its own full-width row below (`flex-basis: 100%`, negative side margins so it spans edge to edge, 1px top rule @12%, links at **14px** with `padding: 11px 0 9px`). With only two or three destinations this beats a drawer — nothing is hidden behind a tap.
+At ≤900px the header wraps to two rows: brand + account on the first, and the whole nav on its own full-width row below (`flex-basis: 100%`, negative side margins so it spans edge to edge, 1px top rule @12%, links at **14px** with `padding: 11px 0 9px`). The nav row scrolls horizontally (`overflow-x: auto`, gap 18px) so all three public destinations plus Admin fit. With this few destinations this beats a drawer — nothing is hidden behind a tap.
 
 > **Copy fix pending:** the subtitle currently reads "Oldhammer archive", which is left over from an earlier archive-framing brief; the page blurb says "My collection of Oldhammer miniatures". Pick one voice before shipping.
 
@@ -151,6 +152,11 @@ The **plate**: `aspect-ratio: 3/4`, `overflow: hidden`, ground `--color-neutral-
   - Icon: 18px crosshair, `stroke-width: 2.4`, `stroke-linecap: square` — `<circle cx=12 cy=12 r=7>` plus four ticks `M12 1v3 M12 20v3 M1 12h3 M20 12h3`.
   - `title` is "I am looking for this" / "Stop looking for this".
 - **WANTED strip** — when wanted, a full-width bar pinned to the **top** of the plate (`left/right/top: 0`, `z-index: 3`): `--color-accent` fill, `--color-bg` text, heading font weight 800, **9px**, `letter-spacing: .16em`, `padding: 3px 6px`, label flush left. This is the state's at-a-glance signal in a dense grid.
+- **For-trade toggle** — a 34×34 square in the *same slot* as the wanted crosshair (`bottom: calc(var(--space-2) + 40px)`, same right edge), shown **only when the miniature is owned** — the two are mutually exclusive by definition, so the slot is never contested.
+  - For trade: **`--color-text` border and fill, `--color-bg` glyph** — solid ink, deliberately *not* accent red: red is reserved for the hunt. Not for trade: border `--color-bg` @60%, fill `--color-neutral-900` @45%, glyph `--color-bg` @70% (always visible, like the crosshair).
+  - Icon: 18px swap arrows, `stroke-width: 2.4`, `stroke-linecap: square` — `M3 7h15l-4-4` and `M21 17H6l4 4`.
+  - `title` is "I have this for trade" / "Not for trade any more".
+- **FOR TRADE strip** — when flagged, a full-width bar pinned to the top of the plate, identical geometry to the WANTED strip (`left/right/top: 0`, 9px heading font 800, `.16em`, `padding: 3px 6px`, flush left) but filled `--color-text` with `--color-bg` text. Two states, two colours, same shape: red = I want it, black = you can have it. They can never collide (wanted requires unowned, trade requires owned).
 - Two alternative owned-marks exist behind a prop (see Props below): a rotated "OWNED" **stamp** (3px accent border, `rotate(-12deg)`, accent text 15px `.14em`) and a **corner fold** (30px accent triangle, top-right). Default is the checkbox.
 
 Caption below the plate: code at **10px** uppercase `.1em` (accent-700 when owned, text @40% when not), name in heading font **11.5px/1.2** (full ink when owned, text @52% when not). Both are individually toggleable via props; a "No info" label at 10px @32% covers the caption-off case.
@@ -189,7 +195,22 @@ The red WANTED strip, the owned tick box and the lit crosshair all behave exactl
 
 > **Open:** the intro blurb and this poster now make the same ask twice. Keep one — the poster if the page is mainly shared as a link, the blurb if it is mainly read by people already on the site.
 
-### 4. Admin — Ranges & sets
+### 4. For trade (public)
+
+**Purpose:** the counterpart to Wanted — a **shareable trade list** of owned spares. Same audience, same job: land, scan the photographs, make an offer.
+
+**Route:** its own page (`/for-trade`), reachable from the header nav. Public.
+
+**Everything is the wanted page, with these substitutions** — same `max-width: 1320px` single column, same `padding: 30px 30px 0`, same page head (2px rule, `margin-bottom: 28px`), same genre grouping (FANTASY / SCI-FI / SPECIALIST GAMES, empty genres omitted), same grid and the same sort (set code then miniature code, numeric-aware):
+
+- `h1` **"For trade"** at **60px/.94**.
+- Blurb, 14px/1.55 @62%, `max-width: 54ch`: "Duplicates and spares from the drawer, all of them available. Contact me at jonas@verdensmand.com if you want any of these — I trade, and I sell." Address is a `mailto:` in `--color-accent-700`.
+- Right: the trade count as a display figure (heading 800, **56px/.9**, `--color-accent`) over "Miniatures offered" at 9.5px uppercase `.08em` @50%. The figure stays accent red even though the item state is black — it is the page's one emphasis, not a state marker.
+- **Cards**: the miniature card at owned strength (everything here is owned, so nothing is dimmed), with the same third caption line `"{SET CODE} · {Set name}"`. Only **two** controls: the black FOR TRADE strip and the ink swap button, which unflags the item and drops it from the page on the next render. **No owned tick and no crosshair** — the plate is not clickable here, because un-owning something from the trade list is not an action anyone wants by accident.
+- **Empty state** — `padding: 64px 0` above a 2px rule: "Nothing in the trade drawer" (heading 22px) / "Tick the swap icon on anything you own and it is listed here as available." (13.5px/1.55 @58%), then a secondary "Browse the collection" button.
+- **Closing poster** — the same full-bleed accent band: `h2` **"Want one of these?"** at 44px/1, a 14px line at `--color-bg` @88% ("Send the code and what you have to swap. Straight sales are fine too — everything here is a spare."), and the inverted email block.
+
+### 5. Admin — Ranges & sets
 
 `display: grid; grid-template-columns: 200px minmax(0,1fr)`; min-height `calc(100vh - 53px)`.
 
@@ -199,7 +220,7 @@ The red WANTED strip, the owned tick box and the lit crosshair all behave exactl
 
 Per range: `h3` 22px + uppercase meta @50%, then right-aligned secondary **"Edit range"** (`edit`) and primary **"Add set"** (`add`) at 12px. Below, a `.table` with columns Code (110px) / Set / Miniatures (130px); rows are clickable and hover-tinted (`--color-text` @4%). If a range has no sets: a 22px-padded block under a 2px rule — "No sets in this range yet" / "Add a set to start listing miniatures under {range}."
 
-### 5. Admin — Set detail
+### 6. Admin — Set detail
 
 Breadcrumb ("← Ranges & sets / Range name"), `h2` "{CODE} {Set name}", count line at 11px uppercase @50%, and secondary **"Edit set"** + primary **"Add miniature"**.
 
@@ -207,7 +228,7 @@ Table columns: drag handle (28px, `⠿`, `cursor: grab`), thumbnail (46px — a 
 
 Empty state: `padding: 34px 0` between 2px rules — "No miniatures in this set yet" / "Add the first casting and it appears in the public catalogue straight away."
 
-### 6. Admin — Miniature drawer
+### 7. Admin — Miniature drawer
 
 Right-hand sheet over a scrim (`--color-neutral-900` @42%, `z-index: 60`); clicking the scrim closes. Panel **480px** (`max-width: 92vw`), full height, scrollable, `--color-bg`, `border-left: 2px`, `--shadow-lg`, `padding: 22px 24px 40px`. Full-width ≤900px with no left border.
 
@@ -217,7 +238,7 @@ Right-hand sheet over a scrim (`--color-neutral-900` @42%, `z-index: 60`); click
 
 **Currently non-functional:** field edits don't persist and Save just closes. The upload is preview-only (object URL held in memory). Both need real wiring.
 
-### 7. Auth (sign in / sign up)
+### 8. Auth (sign in / sign up)
 
 Two equal columns, `min-height: calc(100vh - 53px)`; stacks ≤900px.
 
@@ -229,7 +250,7 @@ Left (`padding: 64px 56px`, `max-width: 560px`, vertically centred): accent kick
 
 Right (`--color-surface`, `border-left: 2px`, same padding): "WHAT AN ACCOUNT GIVES YOU" label, then three points, each `padding: 18px 0` under a 2px top rule — heading font 18px title over 13.5px/1.5 body @60% `max-width: 40ch`.
 
-### 8. Dialogs
+### 9. Dialogs
 
 Two modals, both `.dialog-backdrop` + `.dialog` from the design system:
 
@@ -242,11 +263,13 @@ Neither closes on **Esc** yet — add that, plus focus trapping and initial focu
 
 ## Interactions & Behaviour
 
-**Navigation** is state-driven, not routed. The prototype switches on a `screen` value (`browse` / `wanted` / `admin` / `auth`) plus a `setFilter` (the open set) and `adminSetId`. **Give each of these a real URL when porting**: e.g. `/`, `/sets/:setCode`, `/wanted`, `/admin/ranges`, `/admin/sets/:setCode`, `/signin`. `/wanted` in particular is meant to be pasted into forum posts and messages, so it must be a real, stable, publicly readable URL. Every navigation scrolls the window to the top.
+**Navigation** is state-driven, not routed. The prototype switches on a `screen` value (`browse` / `wanted` / `trade` / `admin` / `auth`) plus a `setFilter` (the open set) and `adminSetId`. **Give each of these a real URL when porting**: e.g. `/`, `/sets/:setCode`, `/wanted`, `/for-trade`, `/admin/ranges`, `/admin/sets/:setCode`, `/signin`. `/wanted` and `/for-trade` in particular are meant to be pasted into forum posts and messages, so it must be a real, stable, publicly readable URL. Every navigation scrolls the window to the top.
 
 **Owning a miniature** — click the plate or the tick box. If not signed in, the app scrolls to top and switches to the sign-in screen instead (the intent is not remembered — worth improving: resume the tick after auth). "Tick whole set" owns all miniatures in the set, or clears them all if every one is already owned.
 
 **Wanting a miniature** — click the crosshair. Same auth gate. Wanted is only meaningful while unowned: the flag is ignored (and its control hidden) once the miniature is owned. Decide on port whether ticking *owned* should also clear a stored `wanted` row, or leave it dormant so un-ticking restores the hunt; the prototype leaves the record and just masks it.
+
+**Flagging a miniature for trade** — click the swap button on an owned card. Same auth gate as owning and wanting. The flag is only meaningful while owned: un-ticking owned hides the control and masks the flag (the prototype keeps the record, as with wanted). A miniature can never be both wanted and for trade.
 
 **Filters** are mutually exclusive: All / Owned / Missing / Wanted, applied over the current set's miniatures. Wanted = not owned AND flagged.
 
@@ -270,8 +293,9 @@ Prototype state, and what it should become:
 | --- | --- | --- |
 | `owned: {code: 1}` | in-memory, seeded fake on mount | per-user persisted collection rows |
 | `wanted: {code: 1}` | in-memory | per-user wishlist rows |
+| `trade: {code: 1}` | in-memory, seeded fake on mount | per-user "available to trade" flag on the owned row |
 | `signedIn` | boolean | real session |
-| `screen`, `setFilter`, `adminSetId` | view switches | routes (`browse` / `wanted` / `admin` / `auth`) |
+| `screen`, `setFilter`, `adminSetId` | view switches | routes (`browse` / `wanted` / `trade` / `admin` / `auth`) |
 | `expanded: {rangeCode: true}` | rail disclosure | local UI state (may persist) |
 | `ownedOnly` / `missingOnly` / `wantedOnly` | filter flags | one enum + query param |
 | `density` | grid density | local preference, persisted |
@@ -285,7 +309,7 @@ Prototype state, and what it should become:
 - **Range** — `code`, `name`, `genre` (Fantasy / Sci-fi / Specialist games), plus derived set and miniature counts.
 - **Set** — `code` (e.g. `C11`), `name`, `rangeCode`, ordered miniatures.
 - **Miniature** — `code`, `name`, `setCode`, `rangeCode`, `photo`, `sortOrder`.
-- **Per-user** — `owned` and `wanted` joins on miniature code.
+- **Per-user** — `owned` and `wanted` joins on miniature code; `forTrade` as a flag on the owned join (not a third independent set).
 
 Ranges sort alphabetically; sets sort by code with numeric-aware comparison (`localeCompare(…, {numeric: true})`) so `C1` precedes `C11`. Genre sections follow a fixed genre order, and genres with no ranges are omitted. Counts shown per set, per range, and in the header are all derived — don't store them.
 
@@ -302,6 +326,7 @@ Ship the defaults: Compact + Checkbox + both caption lines.
 ## Assets
 
 - Miniature photographs in the prototype are placeholder JPEGs supplied by the user, in `uploads/` (`Extech.jpg`, `Female_Warrior_Jayne.jpg`, `Hero.jpg`, `Scum-1.jpg`). They stand in for real collection photography and are **not** production assets — expect user-uploaded images, rendered through the grayscale plate treatment.
+- The for-trade swap glyph is inline SVG; path given in the miniature-card section above.
 - Interface icons: Material Symbols Outlined (loaded from Google Fonts) — `add`, `edit`, `delete`, `arrow_back`, `swap_horiz`, `add_photo_alternate`. Swap for the codebase's icon set.
 - The owned tick and the wanted crosshair are inline SVG; exact paths are given in the miniature-card section above.
 - Fonts: **Archivo** (heading 800, body 400/500) via the design system stylesheet.
@@ -316,7 +341,7 @@ Ship the defaults: Compact + Checkbox + both caption lines.
 
 ## Known gaps to close on port
 
-1. Owned + wanted persistence (currently session-only, seeded with fake data).
+1. Owned, wanted and for-trade persistence (currently session-only, seeded with fake data).
 2. Drawer field editing and save (inputs are inert).
 3. Real photo upload and storage (currently in-memory object URLs).
 4. Replace the hard-coded header totals ("5,318", "412") with derived counts.
@@ -325,5 +350,5 @@ Ship the defaults: Compact + Checkbox + both caption lines.
 7. Resume the intended tick after a sign-in interruption.
 8. Reconcile the header brand subtitle ("Oldhammer archive") with the collection framing.
 9. Decide whether the wanted page's intro ask or its closing red poster survives — currently both make the same request.
-10. The wanted page is public but the crosshair that removes an item is not gated by ownership of the *page*; on port, only the account that owns the list may edit it.
+10. The wanted and for-trade pages are public, but the controls that remove an item (crosshair, swap) are not gated by ownership of the *page*; on port, only the account that owns the lists may edit them.
 11. Global `a` colour is `--color-accent-700` (not `--color-accent`) so in-copy links clear contrast at body size — keep that when porting the link styles.
